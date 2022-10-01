@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# dataset
+geolife_dataset/*
+trajectories/*
+
+*status.json
