@@ -1,7 +1,9 @@
 """
 This contains necessary functions to handle the data.
 """
+from collections import Counter
 import json
+from random import Random
 
 import numpy as np
 from yupi import Trajectory
@@ -46,22 +48,23 @@ def get_selected_data(metadata: list[dict]) -> list[dict]:
     Output: metadata dict with the filtered trajectories.
     """
     classes = {"car", "taxi", "bus", "walk", "bike", "subway", "train"}
-    data = [traj_md for traj_md in metadata if traj_md["class"] in classes]
+    filter_data = [
+        traj
+        for traj in metadata
+        if traj["class"] in classes
+        if traj["class"] in classes and traj["length"] > 30 and traj["mean_dt"] <= 8
+    ]
     final_data = []
-    for traj_md in data:
-        # Filter trajs: dt <= 3s and len >= 100
-        if traj_md["mean_dt"] > 3 or traj_md["length"] < 100:
-            continue
-
+    for traj_md in filter_data:
         # Join similar classes
-        if traj_md["class"] == "taxi":
-            traj_md["class"] = "car"
-        if traj_md["class"] == "subway":
-            traj_md["class"] = "train"
+        if traj_md["class"] == "taxi" or traj_md["class"] == "bus":
+            traj_md["class"] = "bus-taxi"
         final_data.append(traj_md)
-    final_data = load_trajs_data(final_data)
+    print(f"Total trajectories: {len(final_data)}")
+    counter = Counter([md["class"] for md in final_data])
+    for k, v in counter.most_common(len(counter)):
+        print(f"{k:>10}: {v:<10}")
     return final_data
-
 
 @PipelineStep.build("traj-class builder")
 def traj_class_builder(metadata: list[dict]) -> tuple[list[Trajectory], list[str]]:

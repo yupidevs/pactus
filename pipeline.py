@@ -228,12 +228,7 @@ class Pipeline:
         Runs the pipeline on the given data.
         """
         self.reset()
-        t_0 = time()
         res = data
-        for func in self.pipeline:
+        for _ in self.pipeline:
             res = self.run_next_step(*data, use_cache=use_cache)
-            t_1 = time()
-            delta_t = t_1 - t_0
-            t_0 = t_1
-            print(f"{func.name} duration: {delta_t:.2f}s")
         return res

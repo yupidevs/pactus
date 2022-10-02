@@ -18,8 +18,8 @@ def get_traj_extraction_pl(origin: int = GEOLIFE_DATASET) -> Pipeline:
             "Geolife data loader",
             parse_data,
             load_trajs_metadata,
-            load_trajs_data,
             get_selected_data,
+            load_trajs_data,
             traj_class_builder,
         )
     if origin == LANGEVIN_GENERATED:
