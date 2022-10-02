@@ -16,7 +16,7 @@ VEL_CHANGE_RATE_THRESHOLD = 3
 
 main_pl = Pipeline(
     "Main",
-    get_traj_extraction_pl(),
+    get_traj_extraction_pl(3),
     get_feat_extraction_pl(
         features=FEATURES,
         stop_rate_threshold=STOP_RATE_THRESHOLD,

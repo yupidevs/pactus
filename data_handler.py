@@ -60,10 +60,6 @@ def get_selected_data(metadata: list[dict]) -> list[dict]:
         if traj_md["class"] == "taxi" or traj_md["class"] == "bus":
             traj_md["class"] = "bus-taxi"
         final_data.append(traj_md)
-    print(f"Total trajectories: {len(final_data)}")
-    counter = Counter([md["class"] for md in final_data])
-    for k, v in counter.most_common(len(counter)):
-        print(f"{k:>10}: {v:<10}")
     return final_data
 
 @PipelineStep.build("traj-class builder")
