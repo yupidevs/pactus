@@ -256,7 +256,7 @@ def get_feat(traj: Trajectory, feat: int, **kwargs) -> float:
     raise ValueError("Feature not found")
 
 
-def get_feat_vector(traj: Trajectory, feats: int, **kwargs) -> list[float]:
+def get_feat_vector(traj: Trajectory, feats: int, **kwargs) -> np.ndarray:
     """Get feature vector from trajectory.
 
     Parameters
@@ -271,4 +271,6 @@ def get_feat_vector(traj: Trajectory, feats: int, **kwargs) -> list[float]:
     list[float]
         Feature vector.
     """
-    return [get_feat(traj, feat, **kwargs) for feat in FEAT_VALUES if feat & feats]
+    return np.array(
+        [get_feat(traj, feat, **kwargs) for feat in FEAT_VALUES if feat & feats]
+    )

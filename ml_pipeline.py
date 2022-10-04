@@ -1,18 +1,14 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import sklearn.pipeline as skp
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import GridSearchCV, KFold, train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-import features as feats
 from pipeline import Pipeline, PipelineStep
 
-FeatClassTuple = tuple[list[float], str]
 TrainTestTuples = tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-FeatureImportances = list[tuple[str, float]]
 
 RANDOM_FOREST = 0
 SUPPORT_VECTOR_MACHINE = 1
@@ -63,7 +59,7 @@ def get_train_test_splitter(test_size: float = 0.2, random_state: int | None = N
 
     @PipelineStep.build("train test splitter")
     def train_test_splitter(
-        feat_vecs: list[list[float]], clss: list[str]
+        feat_vecs: np.ndarray, clss: np.ndarray
     ) -> TrainTestTuples:
         """
         Splits the data into two sets: train and test.
@@ -97,8 +93,6 @@ def __get_random_forest_pl(splitter: PipelineStep, **rfc_kwargs):
                 instance of a Random Forest Classifier).
         """
         X, y = splitted_data[0:2]
-        X = np.array(X)
-        y = np.array(y)
         rfc_kwargs["max_features"] = rfc_kwargs.get("max_features", 16)
         rfc_kwargs["n_estimators"] = rfc_kwargs.get("n_estimators", 200)
         rfc_kwargs["bootstrap"] = rfc_kwargs.get("bootstrap", False)
@@ -125,18 +119,6 @@ def __get_random_forest_pl(splitter: PipelineStep, **rfc_kwargs):
         """
         X_val, y_val = splitted_data[2:4]
         accuracy = float(rfc.score(X_val, y_val))
-        # importances = list(zip(feats.FEAT_NAMES, rfc.feature_importances_))
-        # importances = sorted(importances, key=lambda x: -x[1])[:10]
-        # print("Feature importances")
-        # print(*[f"{name}: {importance}" for name, importance in importances], sep="\n")
-
-        # plt.title("10 most important features")
-        # plt.xlabel("Features")
-        # plt.ylabel("Importances")
-        # plt.xticks(rotation=-90)
-        # plt.bar(names, values)
-        # plt.grid()
-        # plt.show()
 
         print("Random forest accuracy", accuracy)
         pred_val = rfc.predict(X_val)
@@ -153,7 +135,7 @@ def __get_random_forest_pl(splitter: PipelineStep, **rfc_kwargs):
 
 def __get_svm_pl(splitter: PipelineStep, **svc_kwargs):
     @PipelineStep.build("SVM trainer")
-    def random_forest_classifier(
+    def svm_classifier(
         splitted_data: TrainTestTuples,
     ) -> tuple[TrainTestTuples, skp.Pipeline]:
         """
@@ -193,7 +175,7 @@ def __get_svm_pl(splitter: PipelineStep, **svc_kwargs):
     return Pipeline(
         "Random forest classifier",
         splitter,
-        random_forest_classifier,
+        svm_classifier,
         score,
         confusion_matrix_builder,
     )

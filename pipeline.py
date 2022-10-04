@@ -227,6 +227,8 @@ class Pipeline:
         """
         Runs the pipeline on the given data.
         """
+        print("\nRunning pipeline:", self.name)
+        print(SEPARATOR * SEP_LENGTH)
         self.reset()
         res = data
         for _ in self.pipeline:

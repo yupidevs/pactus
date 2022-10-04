@@ -1,9 +1,4 @@
-"""
-This contains necessary functions to handle the data.
-"""
-from collections import Counter
 import json
-from random import Random
 
 import numpy as np
 from yupi import Trajectory
@@ -62,8 +57,9 @@ def get_selected_data(metadata: list[dict]) -> list[dict]:
         final_data.append(traj_md)
     return final_data
 
+
 @PipelineStep.build("traj-class builder")
-def traj_class_builder(metadata: list[dict]) -> tuple[list[Trajectory], list[str]]:
+def traj_class_builder(metadata: list[dict]) -> tuple[list[Trajectory], np.ndarray]:
     """
     Extracts the trajectories and their classes from the metadata
     dictionary. This prepares the data for the feature extraction
@@ -72,4 +68,4 @@ def traj_class_builder(metadata: list[dict]) -> tuple[list[Trajectory], list[str
     Input: metadata dictionary
     Output: list of traj-class tuples
     """
-    return [d["traj_data"] for d in metadata], [d["class"] for d in metadata]
+    return [d["traj_data"] for d in metadata], np.array([d["class"] for d in metadata])

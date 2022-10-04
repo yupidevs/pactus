@@ -1,5 +1,7 @@
 from random import Random
+from typing import Any
 
+import numpy as np
 from yupi.generators import DiffDiffGenerator, LangevinGenerator
 from yupi.trajectory import Trajectory
 
@@ -31,7 +33,7 @@ def _generate_diffdiff(N, dt, tt, gamma, sigma, seed) -> list[Trajectory]:
 
 
 @PipelineStep.build("langevin dataset generator")
-def _get_langevin_dataset(total=50) -> tuple[list[Trajectory], list[str]]:
+def _get_langevin_dataset(total=50) -> tuple[list[Trajectory], np.ndarray]:
     if isinstance(total, tuple):
         total = 50
     dataset = []
@@ -63,11 +65,11 @@ def _get_langevin_dataset(total=50) -> tuple[list[Trajectory], list[str]]:
             dataset += temp
             classes += [f"type{j}"] * len(temp)
 
-    return dataset, classes
+    return dataset, np.array(classes)
 
 
 @PipelineStep.build("diff diff dataset generator")
-def _get_diffdiff_dataset(total=50) -> tuple[list[Trajectory], list[str]]:
+def _get_diffdiff_dataset(total=50) -> tuple[list[Trajectory], np.ndarray]:
     if isinstance(total, tuple):
         total = 50
     dataset = []
@@ -99,16 +101,17 @@ def _get_diffdiff_dataset(total=50) -> tuple[list[Trajectory], list[str]]:
             dataset += temp
             classes += [f"type{j}"] * len(temp)
 
-    return dataset, classes
+    return dataset, np.array(classes)
 
 
 @PipelineStep.build("langevin vs diff diff dataset generator")
-def _get_lan_vs_diff_dataset(_none) -> tuple[list[Trajectory], list[str]]:
-    lang = _get_langevin_dataset(40)[0]
-    diff = _get_diffdiff_dataset(40)[0]
+def _get_lan_vs_diff_dataset(_none) -> tuple[list[Trajectory], np.ndarray]:
+    count = 5
+    lang = _get_langevin_dataset(count)[0]
+    diff = _get_diffdiff_dataset(count)[0]
     dataset = lang + diff
     classes = ["langevin"] * len(lang) + ["diff-diff"] * len(diff)
-    return dataset, classes
+    return dataset, np.array(classes)
 
 
 def get_traj_extraction_pl(origin: int = GEOLIFE_DATASET) -> Pipeline:
