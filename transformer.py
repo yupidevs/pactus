@@ -1,13 +1,17 @@
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
 
-def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0.0):
+def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0.0, mask=None):
+    if mask is not None:
+        mask = mask[:, tf.newaxis, tf.newaxis, :]
+
     # Normalization and Attention
     x = layers.LayerNormalization(epsilon=1e-6)(inputs)
     x = layers.MultiHeadAttention(
         key_dim=head_size, num_heads=num_heads, dropout=dropout
-    )(x, x)
+    )(x, x, attention_mask=mask)
     x = layers.Dropout(dropout)(x)
     res = x + inputs
 
@@ -29,11 +33,12 @@ def build_model(
     mlp_units,
     dropout=0.0,
     mlp_dropout=0.0,
+    input_mask=None,
 ) -> keras.Model:
     inputs = keras.Input(shape=input_shape)
     x = inputs
     for _ in range(num_transformer_blocks):
-        x = transformer_encoder(x, head_size, num_heads, ff_dim, dropout)
+        x = transformer_encoder(x, head_size, num_heads, ff_dim, dropout, input_mask)
 
     x = layers.GlobalAveragePooling2D(data_format="channels_first")(x)
     for dim in mlp_units:
