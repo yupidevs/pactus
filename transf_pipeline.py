@@ -41,7 +41,7 @@ def raw_data_extractor(
     max_len = np.max([len(traj) for traj in raw_data])
     all_raw_data = np.zeros((len(raw_data), max_len, 3))
     for i, traj in enumerate(raw_data):
-        all_raw_data[i, :, :] = np.nan
+        all_raw_data[i, :, :] = 0  # TODO: check for masking
         all_raw_data[i, : len(traj)] = traj
 
     return all_raw_data, classes
