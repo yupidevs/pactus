@@ -5,54 +5,74 @@ from pathlib import Path
 
 import requests
 
+import config as cfg
 from dataset import Dataset
 
-__GEOLIFE_DATASET_URL = "https://download.microsoft.com/download/F/4/8/F4894AA5-FDBC-481E-9285-D5F8C4C4F039/Geolife%20Trajectories%201.3.zip"
-__MNIST_DATASET_URL = "http://yann.lecun.com/exdb/mnist/"
-__DOWNLOAD_CHUNCK_SIZE = 4096
+SUPPORTED_DATASETS = [
+    "geolife",
+    "mnist",
+    "langevin",
+    "diff_diff",
+    "langevin_vs_diff_diff",
+]
 
 
-def _dataset_path(dataset_name: str) -> Path:
-    return Path(f"datasets/{dataset_name}")
+def _get_path(path: str, *args) -> Path:
+    return Path(path.format(*args))
 
 
-def _dataset_metadata_path(dataset_name: str) -> Path:
-    return _dataset_path(dataset_name) / "dataset_metadata.json"
+def _load_metadata(path: Path) -> dict:
+    assert path.exists(), f"Metadata file {path} does not exist"
+    with open(path, "r", encoding="utf-8") as metadata_file:
+        return json.load(metadata_file)
 
 
-def _dataset_raw_data_path(dataset_name: str) -> Path:
-    return _dataset_path(dataset_name) / "raw_data"
+def _needs_download(dataset_name: str, force_redownload: bool = False) -> bool:
+    """Checks if a dataset needs to be downloaded."""
+    if force_redownload:
+        return True
 
+    metadata_file = _get_path(cfg.DS_METADATA_FILE, dataset_name)
 
-def _dataset_yupified_data_path(dataset_name: str) -> Path:
-    return _dataset_path(dataset_name) / "yupified_data"
+    # If the metadata file doesn't exist, the dataset needs to be downloaded
+    if not metadata_file.exists():
+        return True
+
+    metadata = _load_metadata(metadata_file)
+
+    # Redownload if the version changes
+    return metadata["version"] != cfg.DS_VERSION
 
 
 def _download_dataset(url: str, dataset_name: str) -> None:
     """Downloads a dataset from a url."""
 
     def get_progress_log(part, total):
+        # If the total is unknown, just return the part
         if total == -1:
-            return f"Downloaded {part / __DOWNLOAD_CHUNCK_SIZE} bytes"
+            return f"Downloaded: {part / 1024 ** 2:.2f} MB"
 
-        passed = int(50 * part / total)
-        rest = int(50 * (1 - part / total))
-        return f"[{'#' * passed}{' ' * rest}] {part * 100/total:.2f}%"
+        passed = "#" * int(cfg.PROGRESS_BAR_LENGTH * part / total)
+        rest = " " * (cfg.PROGRESS_BAR_LENGTH - len(passed))
+        return f"[{passed}{rest}] {part * 100/total:.2f}%"
 
     # Create the dataset folder if it doesn't exist
     logging.info("Creating dataset folder for %s", dataset_name)
-    dataset_path = _dataset_raw_data_path(dataset_name)
+    dataset_path = _get_path(cfg.DS_DIR, dataset_name)
     dataset_path.mkdir(parents=True, exist_ok=True)
 
-    # Download the dataset
+    # Make the download request
     logging.info("Downloading %s dataset", dataset_name)
     response = requests.get(url, allow_redirects=True, stream=True)
     if response.status_code != 200:
         raise RuntimeError(f"Failed to download dataset {dataset_name}")
+
+    # Download the dataset to a zip file
     data_length = int(response.headers.get("content-length", -1))
-    with open(dataset_path / "dataset.zip", "wb") as ds_file:
+    dataset_file_path = dataset_path / url.split("/")[-1]
+    with open(dataset_file_path, "wb") as ds_file:
         downloaded = 0
-        for chunk in response.iter_content(chunk_size=__DOWNLOAD_CHUNCK_SIZE):
+        for chunk in response.iter_content(chunk_size=cfg.DOWNLOAD_CHUNCK_SIZE):
             if chunk:
                 ds_file.write(chunk)
                 downloaded += len(chunk)
@@ -60,42 +80,33 @@ def _download_dataset(url: str, dataset_name: str) -> None:
 
     # Extract the dataset
     logging.info("Extracting %s dataset", dataset_name)
-    with zipfile.ZipFile(dataset_path / "dataset.zip", "r") as zip_ref:
+    with zipfile.ZipFile(dataset_file_path, "r") as zip_ref:
         zip_ref.extractall(str(dataset_path))
 
     # Create the dataset metadata file
     logging.info("Creating dataset metadata for %s", dataset_name)
-    with open(
-        _dataset_metadata_path(dataset_name), "w", encoding="utf-8"
-    ) as metadata_file:
-        json.dump(
-            {
-                "name": dataset_name,
-                "path": str(dataset_path),
-                "version": "0.1.0",
-            },
-            metadata_file,
-            ensure_ascii=False,
-            indent=4,
-        )
+    metadata_path = _get_path(cfg.DS_METADATA_FILE, dataset_name)
+    with open(metadata_path, "w", encoding="utf-8") as metadata_file:
+        metadata = {
+            "name": dataset_name,
+            "path": str(dataset_path),
+            "version": cfg.DS_VERSION,
+        }
+        json.dump(metadata, metadata_file, ensure_ascii=False, indent=4)
 
 
 def _load_geolife_dataset(force_redownload: bool) -> Dataset:
     dataset_name = "geolife"
     # Check if the dataset needs to be downloaded
-    if force_redownload or not _dataset_metadata_path(dataset_name).exists():
-        _download_dataset(__GEOLIFE_DATASET_URL, dataset_name)
+    if _needs_download(dataset_name, force_redownload):
+        _download_dataset(cfg.GEOLIFE_DATASET_URL, dataset_name)
 
     # parse and yupify the dataset
     raise NotImplementedError
 
 
 def _load_mnist_dataset(force_redownload: bool) -> Dataset:
-    dataset_name = "mnist"
     # Check if the dataset needs to be downloaded
-    if force_redownload or not _dataset_metadata_path(dataset_name).exists():
-        _download_dataset(__MNIST_DATASET_URL, dataset_name)
-
     # parse and yupify the dataset
     raise NotImplementedError
 
@@ -119,14 +130,7 @@ def load_dataset(datase_name: str, force_redownload: bool = False) -> Dataset:
     Parameters
     ----------
     datase_name : str
-        The name of the dataset.
-
-        Must be one of the following:
-            - geolife
-            - mnist
-            - langevin
-            - diff_diff
-            - langevin_vs_diff_diff
+        The name of the dataset. Must be one of the supported datasets.
     force_redownload : bool, optional
         If True, the dataset will be downloaded again, even if it already exists.
 
@@ -143,7 +147,7 @@ def load_dataset(datase_name: str, force_redownload: bool = False) -> Dataset:
     if datase_name == "langevin_vs_diff_diff":
         return _load_langevin_vs_diff_diff_dataset()
     raise ValueError(
-        f"The dataset {datase_name} is not supported. "
-        "Supported datasets are: "
-        "geolife, mnist, langevin, diff_diff, langevin_vs_diff_diff"
+        f"The dataset {datase_name} is not supported.\n"
+        "Supported datasets are:\n"
+        f"{', '.join(SUPPORTED_DATASETS)}"
     )
