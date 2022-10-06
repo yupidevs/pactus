@@ -2,15 +2,13 @@ import logging
 
 from yupi import DiffMethod, Trajectory, WindowType
 
-import features as feats
-from dataset_loader import load_dataset
-from feat_pipeline import get_feat_extraction_pl
-from ml_pipeline import get_ml_classifier_pl
-from pipeline import Pipeline
-from trajs_pipeline import get_traj_extraction_pl
-from transf_pipeline import get_transformer_classifier_pl
+import yuca.features as feats
+from yuca.feat_pipeline import get_feat_extraction_pl
+from yuca.ml_pipeline import get_ml_classifier_pl
+from yuca.pipeline import Pipeline
+from yuca.trajs_pipeline import get_traj_extraction_pl
+from yuca.transf_pipeline import get_transformer_classifier_pl
 
-# Set logging level and format like this: time [level]: message
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s"
 )

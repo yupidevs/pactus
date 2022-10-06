@@ -5,14 +5,14 @@ import numpy as np
 from yupi.generators import DiffDiffGenerator, LangevinGenerator
 from yupi.trajectory import Trajectory
 
-from data_handler import (
+from yuca.data_handler import (
     get_selected_data,
     load_trajs_data,
     load_trajs_metadata,
     traj_class_builder,
 )
-from data_parser import parse_data
-from pipeline import Pipeline, PipelineStep
+from yuca.data_parser import parse_data
+from yuca.pipeline import Pipeline, PipelineStep
 
 GEOLIFE_DATASET = 0
 LANGEVIN_GENERATED = 1

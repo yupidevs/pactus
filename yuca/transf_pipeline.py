@@ -2,12 +2,12 @@ import numpy as np
 import tensorflow as tf
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
-from yupi import Trajectory
 
-import transformer as tr
-from extra_pl_steps import dataset_description
-from ml_pipeline import get_train_test_splitter
-from pipeline import Pipeline, PipelineStep
+import yuca.transformer as tr
+from yuca.extra_pl_steps import dataset_description
+from yuca.ml_pipeline import get_train_test_splitter
+from yuca.pipeline import Pipeline, PipelineStep
+from yupi import Trajectory
 
 TrainTestTuples = tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 

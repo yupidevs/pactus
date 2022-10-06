@@ -3,7 +3,7 @@ from collections import Counter
 import numpy as np
 from yupi import Trajectory
 
-from pipeline import PipelineStep
+from yuca.pipeline import PipelineStep
 
 
 @PipelineStep.build("dataset description")

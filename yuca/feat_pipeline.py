@@ -4,9 +4,9 @@ from typing import Any
 import numpy as np
 from yupi import Trajectory
 
-import features as feats
-from pipeline import Pipeline, PipelineStep
-from extra_pl_steps import dataset_description
+import yuca.features as feats
+from yuca.pipeline import Pipeline, PipelineStep
+from yuca.extra_pl_steps import dataset_description
 
 
 def get_feat_extraction_pl(features: int = feats.ALL_FEATS, **kwargs) -> Pipeline:

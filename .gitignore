@@ -129,8 +129,9 @@ dmypy.json
 .pyre/
 
 # dataset
-geolife_dataset/*
-trajectories/*
+yuca/geolife_dataset/*
+yuca/trajectories/*
+yuca/datasets/*
 datasets/*
 
 *status.json

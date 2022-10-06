@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from pipeline import Pipeline, PipelineStep
+from yuca.pipeline import Pipeline, PipelineStep
 
 TrainTestTuples = tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 

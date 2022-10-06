@@ -5,8 +5,8 @@ from pathlib import Path
 
 import requests
 
-import config as cfg
-from dataset import Dataset
+import yuca.config as cfg
+from yuca.dataset import Dataset
 
 SUPPORTED_DATASETS = [
     "geolife",
@@ -32,6 +32,7 @@ def _version_redownload(old_version: str, new_version: str) -> bool:
     old_major = old_version.split(".")[0]
     new_major = new_version.split(".")[0]
     return old_major != new_major
+
 
 def _version_regeneration(old_version: str, new_version: str) -> bool:
     """Checks if the change in version requires a regeneration."""
