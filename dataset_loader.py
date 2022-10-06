@@ -27,6 +27,19 @@ def _load_metadata(path: Path) -> dict:
         return json.load(metadata_file)
 
 
+def _version_redownload(old_version: str, new_version: str) -> bool:
+    """Checks if the change in version requires a redownload."""
+    old_major = old_version.split(".")[0]
+    new_major = new_version.split(".")[0]
+    return old_major != new_major
+
+def _version_regeneration(old_version: str, new_version: str) -> bool:
+    """Checks if the change in version requires a regeneration."""
+    old_minor = old_version.split(".")[1]
+    new_minor = new_version.split(".")[1]
+    return old_minor != new_minor
+
+
 def _needs_download(dataset_name: str, force_redownload: bool = False) -> bool:
     """Checks if a dataset needs to be downloaded."""
     if force_redownload:
@@ -41,7 +54,7 @@ def _needs_download(dataset_name: str, force_redownload: bool = False) -> bool:
     metadata = _load_metadata(metadata_file)
 
     # Redownload if the version changes
-    return metadata["version"] != cfg.DS_VERSION
+    return _version_redownload(metadata["version"], cfg.DS_VERSION)
 
 
 def _download_dataset(url: str, dataset_name: str) -> None:
@@ -99,9 +112,16 @@ def _load_geolife_dataset(force_redownload: bool) -> Dataset:
     dataset_name = "geolife"
     # Check if the dataset needs to be downloaded
     if _needs_download(dataset_name, force_redownload):
-        _download_dataset(cfg.GEOLIFE_DATASET_URL, dataset_name)
+        _download_dataset(cfg.GEOLIFE_DS_URL, dataset_name)
 
-    # parse and yupify the dataset
+    # Load the dataset metadata
+    metadata = _load_metadata(_get_path(cfg.DS_METADATA_FILE, dataset_name))
+
+    if _version_regeneration(metadata["version"], cfg.DS_VERSION):
+        # Regenerate the yupi data
+        raise NotImplementedError
+
+    # Load the yupi data
     raise NotImplementedError
 
 
@@ -112,14 +132,20 @@ def _load_mnist_dataset(force_redownload: bool) -> Dataset:
 
 
 def _load_langevin_dataset() -> Dataset:
+    # Generate trajectories
+    # Build dataset
     raise NotImplementedError
 
 
 def _load_diff_diff_dataset() -> Dataset:
+    # Generate trajectories
+    # Build dataset
     raise NotImplementedError
 
 
 def _load_langevin_vs_diff_diff_dataset() -> Dataset:
+    # Generate trajectories
+    # Build dataset
     raise NotImplementedError
 
 
@@ -134,7 +160,7 @@ def load_dataset(datase_name: str, force_redownload: bool = False) -> Dataset:
     force_redownload : bool, optional
         If True, the dataset will be downloaded again, even if it already exists.
 
-        Only applies to the geolife and mnist datasets.
+        Only applies to the 'geolife' and 'mnist' datasets.
     """
     if datase_name == "geolife":
         return _load_geolife_dataset(force_redownload)
