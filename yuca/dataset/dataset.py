@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 from typing import Any
 from abc import ABC, abstractmethod
+from random import shuffle
+from sklearn.model_selection import train_test_split
 
 from yupi import Trajectory, JSONSerializer
 from yuca import config
@@ -23,9 +25,9 @@ class Dataset(ABC):
         self.labels, self.trajs = self.load()
         self.classes = set(self.labels)
 
-    @abstractmethod
     def _fetch(self, dataset_folder: Path) -> None:
-        """Downloads or generate the dataset"""
+        """Downloads the dataset in case needed"""
+        pass
     
     @abstractmethod
     def _yupify(self) -> tuple[list[Trajectory], list[Any]]:
@@ -34,7 +36,7 @@ class Dataset(ABC):
     def __len__(self):
         return len(self.trajs)
 
-    def _load_metadata() -> dict | None:
+    def _load_metadata(self) -> dict | None:
         metadata_path = _get_path(config.DS_METADATA_FILE, self.name)
         if not metadata_path.exists():
             return None
@@ -93,7 +95,6 @@ class Dataset(ABC):
             json.dump(yupify_metadata, md_file, ensure_ascii=False, indent=4)
 
         self.metadata["yupify_metadata"] = metadata_path
-        self._update_metadata()
 
     def _ensure_cache(self):
         if self._refetch_required():
@@ -102,6 +103,9 @@ class Dataset(ABC):
         if self._yupify_required():
             self.yupify()
 
+        self.metadata["version"] = self.version
+        self._update_metadata()
+
     def _load_yupify_metadata(self):
         assert self.metadata["yupify_metadata"] is not None
         yupi_metadata_path = self.metadata["yupify_metadata"]
@@ -109,7 +113,6 @@ class Dataset(ABC):
             self.yupi_metadata = json.load(md_file)
             
     def _load(self) -> tuple[list[Trajectory], list[Any]]:
-
         self._load_yupify_metadata()
         trajs = [JSONSerializer.load(traj) for traj in self.yupi_metadata["trajs_paths"]]
         labels = self.yupi_metadata["labels"]
@@ -121,3 +124,8 @@ class Dataset(ABC):
         self._create_folder()
         self._ensure_cache()
         return self._load()
+    
+    def split(self, train_size: float) -> tuple[Dataset, Dataset]:
+        assert 0 < train_size < 1, "train_size should be within 0 and 1"
+
+        x_train, y_train, x_test, y_test = train_test_split
