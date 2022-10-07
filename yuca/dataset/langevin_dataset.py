@@ -1,5 +1,7 @@
 from random import Random
+from typing import Any
 
+from yupi import Trajectory
 from yuca.dataset import Dataset
 from yupi.generators import LangevinGenerator
 
@@ -11,10 +13,10 @@ VERSION = "0.1.0"  # See version description in config.py
 class LangevinDataset(Dataset):
     """Dataset of trajectories generated from the Langevin model."""
 
-    def __init__(self, redownload: bool = False, reyupify: bool = False):
-        super().__init__(NAME, VERSION, redownload, reyupify)
+    def __init__(self, reyupify: bool = False):
+        super().__init__(NAME, VERSION, False, reyupify)
 
-    def yupify(self):
+    def yupify(self) -> tuple[list[Trajectory], list[Any]]:
         trajs, labels = [], []
         seed = 0
 
