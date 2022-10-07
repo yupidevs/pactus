@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 
+from yupi import Trajectory
 from yuca import config
 from yuca.dataset._utils import _get_path
 from yuca.dataset import Dataset, DatasetSlice
@@ -32,7 +33,7 @@ class Featurizer:
         """Computes the features matrix for a given dataset or slice."""
 
         feats = None
-        dataset = data if isinstance(data, Dataset) else data.dataset
+        dataset = data.dataset
         file_name = f"{self.selected}.txt"
         feat_file = _get_path(config.DS_FEATS_DIR, dataset.name) / file_name
         
@@ -41,3 +42,6 @@ class Featurizer:
            feats = self._recompute() 
         
         return feats or np.loadtxt(feat_file)
+
+    def traj2vec(self, traj: Trajectory) -> np.ndarray:
+        return get_feat_vec(traj, self.selected, **self.kwargs)

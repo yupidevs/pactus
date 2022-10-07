@@ -17,6 +17,7 @@ class Dataset(ABC):
     def __init__(
         self, name: str, version: str, refetch: bool = False, reyupify: bool = False
     ):
+        self.dataset = self
         self.name = name
         self.version = version
         self.refetch = refetch
@@ -25,8 +26,9 @@ class Dataset(ABC):
         self._metadata = self._load_metadata()
         self.yupi_metadata: dict
 
-        self.labels, self.trajs = self.load()
+        self.trajs, self.labels = self.load()
         self.classes = set(self.labels)
+        super().__init__(self, self.trajs, self.labels)
 
     def fetch(self, dataset_folder: Path) -> None:
         """Downloads the dataset in case needed"""
@@ -112,6 +114,7 @@ class Dataset(ABC):
         trajs_paths = []
         yupi_dir = _get_path(config.DS_YUPI_DIR, self.name)
         for i, traj in enumerate(trajs):
+            traj.traj_id = str(i)
             traj_path = str(yupi_dir / f"traj_{i}.json")
             JSONSerializer.save(traj, traj_path, overwrite=True)
             trajs_paths.append(traj_path)
