@@ -1,3 +1,5 @@
+from yuca.dataset import Dataset
+
 # Dataset metadata
 NAME = "geolife"
 VERSION = "0.1.0" # See version description in config.py

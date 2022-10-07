@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+from sklearn.model_selection import train_test_split
 from yuca import config
 from yuca.dataset._utils import _get_path
 from yupi import Trajectory
 from yupi.core import JSONSerializer
-
 
 class Dataset(ABC):
     """Class for a dataset."""
@@ -157,7 +157,22 @@ class Dataset(ABC):
         self._ensure_cache()
         return self._load()
 
-    def split(self, train_size: float) -> tuple[Dataset, Dataset]:
+    def split(self, train_size: float, stratify: bool = True) -> tuple[DatasetSlice, DatasetSlice]:
         assert 0 < train_size < 1, "train_size should be within 0 and 1"
 
-        raise NotImplementedError
+        x_train, x_test, y_train, y_test = train_test_split(
+            self.trajs,
+            self.labels,
+            stratify=self.labels if stratify else None
+        )
+
+        train_slice = DatasetSlice(self, x_train, y_train)
+        test_slice = DatasetSlice(self, x_test, y_test)
+        return train_slice, test_slice
+
+
+class DatasetSlice:
+    def __init__(self, dataset: Dataset, trajs: list[Trajectory], labels: list[Any]):
+        self.dataset = dataset
+        self.trajs = trajs
+        self.labels = labels 
