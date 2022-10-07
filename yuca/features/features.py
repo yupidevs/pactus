@@ -112,7 +112,7 @@ TURNING_ANGLE_CHANGE_RATE_VAR = __new_feat("TURNING_ANGLE_CHANGE_RATE_VAR")
 TURNING_ANGLE_CHANGE_RATE_COEF_VAR = __new_feat("TURNING_ANGLE_CHANGE_RATE_COEF_VAR")
 TURNING_ANGLE_CHANGE_RATE_IQR = __new_feat("TURNING_ANGLE_CHANGE_RATE_IQR")
 
-ALL_FEATS = __all_feat_val()
+ALL = __all_feat_val()
 
 
 def group(key: Callable[[str], bool]) -> int:

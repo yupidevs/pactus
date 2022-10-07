@@ -24,7 +24,7 @@ from yuca.features.features import (
     ACC_RANGE,
     ACC_STD,
     ACC_VAR,
-    ALL_FEATS,
+    ALL,
     ANGLE_AUTO_CC,
     ANGLE_COEF_VAR,
     ANGLE_IQR,
