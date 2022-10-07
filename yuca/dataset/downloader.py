@@ -1,21 +1,10 @@
+import logging
+import zipfile
 
-MNIST_DS_URL = "http://yann.lecun.com/exdb/mnist/"
+import requests
 
-def _needs_download(dataset_name: str, force_redownload: bool = False) -> bool:
-    """Checks if a dataset needs to be downloaded."""
-    if force_redownload:
-        return True
-
-    metadata_file = _get_path(cfg.DS_METADATA_FILE, dataset_name)
-
-    # If the metadata file doesn't exist, the dataset needs to be downloaded
-    if not metadata_file.exists():
-        return True
-
-    metadata = _load_metadata(metadata_file)
-
-    # Redownload if the version changes
-    return _version_redownload(metadata["version"], cfg.DS_VERSION)
+import yuca.config as cfg
+from yuca.dataset._utils import _get_path
 
 
 def _download_dataset(url: str, dataset_name: str) -> None:
@@ -56,16 +45,3 @@ def _download_dataset(url: str, dataset_name: str) -> None:
     logging.info("Extracting %s dataset", dataset_name)
     with zipfile.ZipFile(dataset_file_path, "r") as zip_ref:
         zip_ref.extractall(str(dataset_path))
-
-    # Create the dataset metadata file
-    logging.info("Creating dataset metadata for %s", dataset_name)
-    metadata_path = _get_path(cfg.DS_METADATA_FILE, dataset_name)
-    with open(metadata_path, "w", encoding="utf-8") as metadata_file:
-        metadata = {
-            "name": dataset_name,
-            "path": str(dataset_path),
-            "version": cfg.DS_VERSION,
-            "yupify_metadata": None
-        }
-        json.dump(metadata, metadata_file, ensure_ascii=False, indent=4)
-
