@@ -98,12 +98,17 @@ class Dataset(ABC):
             logging.info("Yupify is required for the '%s' dataset", self.name)
         return needs_yupify
 
+    def _save_json(self, path: Path, data: dict):
+        with open(path, "w+", encoding="utf-8") as md_file:
+            print(data)
+            json.dump(data, md_file, ensure_ascii=False, indent=4)
+
     def _update_metadata(self):
         logging.info("Updating metadata for %s dataset", self.name)
         logging.info(self.metadata)
-        metadata_path = self.metadata["path"]
-        with open(metadata_path, "w", encoding="utf-8") as md_file:
-            json.dump(self.metadata, md_file, ensure_ascii=False, indent=4)
+        metadata_path = Path(self.metadata["path"])
+        self._save_json(metadata_path, self.metadata)
+       
 
     def _create_folder(self):
         """Create dataset folder if not exists"""
@@ -120,6 +125,8 @@ class Dataset(ABC):
 
         trajs_paths = []
         yupi_dir = _get_path(config.DS_YUPI_DIR, self.name)
+        ds_dir = _get_path(config.DS_DIR, self.name)
+
         for i, traj in enumerate(trajs):
             traj.traj_id = str(i)
             traj_path = str(yupi_dir / f"traj_{i}.json")
@@ -129,11 +136,9 @@ class Dataset(ABC):
         yupify_metadata = {"trajs_paths": trajs_paths, "labels": labels}
 
         logging.info("Saving yupify metadata for %s dataset", self.name)
-        metadata_path = str(yupi_dir / "yupify_metadata.json")
-        with open(metadata_path, "w", encoding="utf-8") as md_file:
-            json.dump(yupify_metadata, md_file, ensure_ascii=False, indent=4)
-
-        self.metadata["yupify_metadata"] = metadata_path
+        metadata_path = ds_dir / "yupify_metadata.json"
+        self._save_json(metadata_path, yupify_metadata)
+        # self.metadata["yupify_metadata"] = str(metadata_path)
 
     def _ensure_cache(self):
         if self._refetch_required():
