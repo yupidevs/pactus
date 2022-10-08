@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from sklearn.model_selection import train_test_split
 from yupi import Trajectory
@@ -14,13 +14,119 @@ from yuca import config
 from yuca.dataset._utils import _get_path, _get_progress_log
 
 
-class Dataset(ABC):
-    """Class for a dataset."""
+class Data:
+    """
+    Structure that groups the trajectories and labels along with some
+    useful methods to work with the set of them.
+    """
+
+    def __init__(
+        self, dataset: Dataset, trajs: list[Trajectory], labels: list[Any]
+    ) -> None:
+        self.dataset = dataset
+        self.trajs = trajs
+        self.labels = labels
+        self.classes = set(self.labels)
+
+    def __len__(self) -> int:
+        return len(self.trajs)
+
+    def split(
+        self,
+        train_size: float,
+        stratify: bool = True,
+        shuffle: bool = True,
+        random_state: int | None = None,
+    ) -> tuple[Data, Data]:
+        """
+        Splits the dataset into train and test dataset slices.
+
+        It uses the sklearn.model_selection.train_test_split function.
+
+        Parameters
+        ----------
+        train_size : float
+            The proportion of the dataset to include in the train split.
+        stratify : bool, optional
+            If True, the split will be stratified according to the labels,
+            by default True
+        shuffle : bool, optional
+            If True, the split will be shuffled, by default True
+        random_state : int | None, optional
+            Random seed for reproducibility, by default None
+
+        Returns
+        -------
+        tuple[Data, Data]
+            A tuple with the train and test Data objects.
+        """
+        assert 0 < train_size < 1, "train_size should be within 0 and 1"
+
+        x_train, x_test, y_train, y_test = train_test_split(
+            self.trajs,
+            self.labels,
+            train_size=train_size,
+            stratify=self.labels if stratify else None,
+            random_state=random_state,
+            shuffle=shuffle,
+        )
+
+        train_data = Data(self.dataset, x_train, y_train)
+        test_data = Data(self.dataset, x_test, y_test)
+        return train_data, test_data
+
+    def map(self, func: Callable[[Trajectory, Any], tuple[Trajectory, Any]]) -> Data:
+        """
+        Applies a function to each trajectory and label pair.
+
+        Usefull to apply some preprocessing to the trajectories
+        or the labels.
+
+        Parameters
+        ----------
+        func : Callable[[Trajectory, Any], tuple[Trajectory, Any]]
+            Function to be applied to each trajectory and label pair.
+
+        Returns
+        -------
+        Data
+            A new Data object with the results of the function.
+        """
+        trajs, labels = [], []
+        for traj, label in zip(self.trajs, self.labels):
+            traj, label = func(traj, label)
+            trajs.append(traj)
+            labels.append(label)
+        return Data(self.dataset, trajs, labels)
+
+    def filter(self, func: Callable[[Trajectory, Any], bool]) -> Data:
+        """
+        Filters the dataset based on a function.
+
+        Parameters
+        ----------
+        func : Callable[[Trajectory, Any], bool]
+            Function to be applied to each trajectory and label pair.
+
+        Returns
+        -------
+        Data
+            A new Data object with the filtered trajectories and labels.
+        """
+        trajs, labels = [], []
+        for traj, label in zip(self.trajs, self.labels):
+            if func(traj, label):
+                trajs.append(traj)
+                labels.append(label)
+        return Data(self.dataset, trajs, labels)
+
+
+class Dataset(Data, metaclass=ABCMeta):
+    """Wraps the data with some general properties that describes a full dataset"""
 
     def __init__(
         self, name: str, version: str, refetch: bool = False, reyupify: bool = False
     ):
-        self.dataset = self
         self.name = name
         self.version = version
         self.refetch = refetch
@@ -28,11 +134,11 @@ class Dataset(ABC):
         self.path = _get_path(config.DS_DIR, self.name)
         self._metadata = self._load_metadata()
         self.yupi_metadata: dict
-        self.dataset_dir = _get_path(config.DS_DIR, self.name)
-        self.dataset_raw_dir = _get_path(config.DS_RAW_DIR, self.name)
+        self.dir = _get_path(config.DS_DIR, self.name)
+        self.raw_dir = _get_path(config.DS_RAW_DIR, self.name)
 
-        self.trajs, self.labels = self.load()
-        self.classes = set(self.labels)
+        trajs, labels = self.load()
+        super().__init__(self, trajs, labels)
 
     def fetch(self) -> None:
         """Downloads the dataset in case needed"""
@@ -183,40 +289,3 @@ class Dataset(ABC):
         self._create_folder()
         self._ensure_cache()
         return self._load()
-
-    def split(
-        self,
-        train_size: float,
-        stratify: bool = True,
-        random_state: int | None = None,
-    ) -> tuple[DatasetSlice, DatasetSlice]:
-        """Splits the dataset into train and test dataset slices"""
-        assert 0 < train_size < 1, "train_size should be within 0 and 1"
-
-        x_train, x_test, y_train, y_test = train_test_split(
-            self.trajs,
-            self.labels,
-            stratify=self.labels if stratify else None,
-            random_state=random_state,
-        )
-
-        train_slice = DatasetSlice(self, x_train, y_train)
-        test_slice = DatasetSlice(self, x_test, y_test)
-        return train_slice, test_slice
-
-
-class DatasetSlice:
-    """A slice of a dataset"""
-
-    def __init__(
-        self,
-        dataset: Dataset,
-        trajs: list[Trajectory],
-        labels: list[Any],
-    ):
-        self.dataset = dataset
-        self.trajs = trajs
-        self.labels = labels
-
-    def __len__(self):
-        return len(self.trajs)

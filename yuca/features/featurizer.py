@@ -43,9 +43,7 @@ class Featurizer:
         np.savetxt(str(feat_file), feats)
         return feats
 
-    def compute(
-        self, data: Dataset | DatasetSlice
-    ) -> np.ndarray:
+    def compute(self, data: Dataset | DatasetSlice) -> np.ndarray:
         """Computes the features matrix for a given dataset or slice."""
 
         feats = None

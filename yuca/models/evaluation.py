@@ -55,10 +55,7 @@ class Evaluation:
             print(*[f"{round(c * 100, 2):<12}" for c in row], sep="")
         print(SUB_SEP * col_width * (len(classes)))
         print(
-            *[
-                f"{round(max(col) * 100, 2):<12}"
-                for col in self._confusion_matrix.T
-            ],
+            *[f"{round(max(col) * 100, 2):<12}" for col in self._confusion_matrix.T],
             sep="",
         )
 

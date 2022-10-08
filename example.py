@@ -1,6 +1,6 @@
 from yuca import Featurizer, LangevinDataset, RandomForestModel, features
 
-SEED = 0 # Random seed for reproducibility
+SEED = 0  # Random seed for reproducibility
 
 # Load Dataset
 dataset = LangevinDataset()

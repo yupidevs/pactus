@@ -73,14 +73,17 @@ def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
                 return dataset_file_path
 
         msg = (
-            "It seems that the dataset is already downloaded, but the size is "
-            f"different.\n"
-            f"    Found: {dataset_file_path.stat().st_size / 1024 ** 2:.2f} MB\n"
-            f"    Expected: {size / 1024 ** 2:.2f} MB\n"
-        ) if size != -1 else (
             "There is a downloaded dataset with the same name, but the download "
             "size is unknown."
         )
+
+        if size != -1:
+            msg = (
+                "It seems that the dataset is already downloaded, but the size is "
+                f"different.\n"
+                f"    Found: {dataset_file_path.stat().st_size / 1024 ** 2:.2f} MB\n"
+                f"    Expected: {size / 1024 ** 2:.2f} MB\n"
+            )
         logging.warning(msg)
         ans = input("Do you want to overwrite it? [y/n]: ")
         if ans.lower() != "y":

@@ -41,7 +41,7 @@ class GeoLifeDataset(Dataset):
         # Loads the raw data and preprocess it
         raw_metadata = []
         logging.info("Preprocessing GeoLife raw data")
-        usr_folders_path = self.dataset_raw_dir / "Geolife Trajectories 1.3/Data"
+        usr_folders_path = self.raw_dir / "Geolife Trajectories 1.3/Data"
         usr_folders = list(sorted(usr_folders_path.iterdir()))
         for i, usr in enumerate(usr_folders):
             print(_get_progress_log(i + 1, len(usr_folders)), end="\r")

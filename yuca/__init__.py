@@ -1,6 +1,6 @@
 import logging
 
-from yuca.dataset import Dataset, LangevinDataset
+from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset
 from yuca.features import Featurizer
 from yuca.models import Model, RandomForestModel
 
