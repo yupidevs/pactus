@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "yuca"
+version = "0.1.0"
+authors = [
+    "Gustavo Viera-López <gvieralopez@gmail.com>",
+    "Alfredo Reyes <areyes@fisica.uh.cu>",
+    "Jorge Morgado <jorge.morgadov@gmail.com>",
+    "Ernesto Altshuler <ealtshuler@fisica.uh.cu>"
+]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/yupidevs/traj-classification"
+keywords = ["trajectory", "classification"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+numpy = ">=1.16.5"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=6.2.2"
+pylint = ">=2.7.2"
+isort = ">=5.10.1"
+black = ">=22.3.0"
+
+[tool.isort]
+profile = "black"
+known_first_party = ["yuca"]
+
+[tool.black]
+target-version = ["py37"]
+
+[tool.pylint."MESSAGES CONTROL"]
+extension-pkg-whitelist = ["cv2"]
+max-line-length = 88
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from sklearn.model_selection import train_test_split
-from yuca import config
-from yuca.dataset._utils import _get_path
 from yupi import Trajectory
 from yupi.core import JSONSerializer
+
+from yuca import config
+from yuca.dataset._utils import _get_path
+
 
 class Dataset(ABC):
     """Class for a dataset."""
@@ -28,7 +30,6 @@ class Dataset(ABC):
 
         self.trajs, self.labels = self.load()
         self.classes = set(self.labels)
-        super().__init__(self, self.trajs, self.labels)
 
     def fetch(self, dataset_folder: Path) -> None:
         """Downloads the dataset in case needed"""
@@ -160,13 +161,13 @@ class Dataset(ABC):
         self._ensure_cache()
         return self._load()
 
-    def split(self, train_size: float, stratify: bool = True) -> tuple[DatasetSlice, DatasetSlice]:
+    def split(
+        self, train_size: float, stratify: bool = True
+    ) -> tuple[DatasetSlice, DatasetSlice]:
         assert 0 < train_size < 1, "train_size should be within 0 and 1"
 
         x_train, x_test, y_train, y_test = train_test_split(
-            self.trajs,
-            self.labels,
-            stratify=self.labels if stratify else None
+            self.trajs, self.labels, stratify=self.labels if stratify else None
         )
 
         train_slice = DatasetSlice(self, x_train, y_train)
@@ -178,4 +179,4 @@ class DatasetSlice:
     def __init__(self, dataset: Dataset, trajs: list[Trajectory], labels: list[Any]):
         self.dataset = dataset
         self.trajs = trajs
-        self.labels = labels 
+        self.labels = labels

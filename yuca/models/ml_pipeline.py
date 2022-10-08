@@ -58,9 +58,7 @@ def get_train_test_splitter(test_size: float = 0.2, random_state: int | None = N
     """
 
     @PipelineStep.build("train test splitter")
-    def train_test_splitter(
-        feat_vecs: np.ndarray, clss: np.ndarray
-    ) -> TrainTestTuples:
+    def train_test_splitter(feat_vecs: np.ndarray, clss: np.ndarray) -> TrainTestTuples:
         """
         Splits the data into two sets: train and test.
 

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from yupi import Trajectory
+
 from yuca.dataset import Dataset
 
 # Dataset metadata

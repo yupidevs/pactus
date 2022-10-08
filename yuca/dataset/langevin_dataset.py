@@ -2,8 +2,9 @@ from random import Random
 from typing import Any
 
 from yupi import Trajectory
-from yuca.dataset import Dataset
 from yupi.generators import LangevinGenerator
+
+from yuca.dataset import Dataset
 
 # Dataset metadata
 NAME = "langevin"
@@ -30,11 +31,20 @@ class LangevinDataset(Dataset):
         total_time_mean = 10
         dt_mean = 0.1
         labels_config = {
-            "type_1": {"gamma": 0.1, "sigma": 0.1, "count": 100},
-            "type_2": {"gamma": 0.1001, "sigma": 0.1, "count": 100},
+            "type_1": {
+                "gamma": 0.1,
+                "sigma": 0.1,
+                "count": 100,
+            },
+            "type_2": {
+                "gamma": 0.1001,
+                "sigma": 0.1,
+                "count": 100,
+            },
         }
 
         for label, config in labels_config.items():
+            assert isinstance(config["count"], int) and config["count"] > 0
             for _ in range(config["count"]):
                 gamma, sigma = config["gamma"], config["sigma"]
                 lg_gen = LangevinGenerator(

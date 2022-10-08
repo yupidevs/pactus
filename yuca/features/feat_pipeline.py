@@ -5,8 +5,8 @@ import numpy as np
 from yupi import Trajectory
 
 import yuca.features as feats
-from yuca.pipeline import Pipeline, PipelineStep
 from yuca.extra_pl_steps import dataset_description
+from yuca.pipeline import Pipeline, PipelineStep
 
 
 def get_feat_extraction_pl(features: int = feats.ALL_FEATS, **kwargs) -> Pipeline:
@@ -22,7 +22,6 @@ def get_feat_extraction_pl(features: int = feats.ALL_FEATS, **kwargs) -> Pipelin
     PipelineStep
         PipelineStep that extracts features from a trajectory.
     """
-
 
     @PipelineStep.build("feat_extractor")
     def feat_extractor_step(

@@ -1,4 +1,3 @@
-from yuca.features.featurizer import Featurizer
 from yuca.features.features import (
     ACC_AUTO_CC,
     ACC_CHANGE_RATE_AUTO_CC,
@@ -77,3 +76,4 @@ from yuca.features.features import (
     VEL_STD,
     VEL_VAR,
 )
+from yuca.features.featurizer import Featurizer

@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import List, NamedTuple, Tuple
 
 import numpy as np
-
 from pipeline import PipelineStep
 
 logging.basicConfig(

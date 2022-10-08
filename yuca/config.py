@@ -1,10 +1,7 @@
 """
 General configurations
 """
-
-__version__ = "0.1.0"
-
-
+from pathlib import Path
 
 # -----------------------------------------------------------------------------
 # Download configs
