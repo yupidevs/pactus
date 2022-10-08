@@ -26,6 +26,8 @@ model = RandomForestModel(
 # Spliting dataset
 train, test = dataset.split(0.8)
 
+print(len(train.trajs), len(train.labels))
+
 # Train the model
 model.train(data=train, cross_validation=5)
 

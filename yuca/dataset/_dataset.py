@@ -138,7 +138,7 @@ class Dataset(ABC):
         logging.info("Saving yupify metadata for %s dataset", self.name)
         metadata_path = ds_dir / "yupify_metadata.json"
         self._save_json(metadata_path, yupify_metadata)
-        # self.metadata["yupify_metadata"] = str(metadata_path)
+        self.metadata["yupify_metadata"] = str(metadata_path)
 
     def _ensure_cache(self):
         if self._refetch_required():
@@ -156,7 +156,7 @@ class Dataset(ABC):
     def _load_yupify_metadata(self):
         assert self.metadata["yupify_metadata"] is not None
         yupi_metadata_path = self.metadata["yupify_metadata"]
-        with open(yupi_metadata_path, "w", encoding="utf-8") as md_file:
+        with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
             self.yupi_metadata = json.load(md_file)
 
     def _load(self) -> tuple[list[Trajectory], list[Any]]:

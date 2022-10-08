@@ -22,7 +22,7 @@ class RandomForestModel(Model):
         self.grid: GridSearchCV
 
     def train(self, data: Dataset | DatasetSlice, cross_validation: int = 0):
-        x_data = self.featurizer.compute(data) if not isinstance(data, list) else data
+        x_data = self.featurizer.compute(data)
         self.grid = GridSearchCV(self.rfc, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
 

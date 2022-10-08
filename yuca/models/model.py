@@ -28,8 +28,8 @@ class Model(ABC):
         self.summary = {"name": self.name}
         self.trained = False
 
-    @abstractmethod
     @_mark_trained
+    @abstractmethod
     def train(self, data: Dataset | DatasetSlice, cross_validation: int = 0):
         """Train the model using a given dataset"""
 
@@ -38,8 +38,9 @@ class Model(ABC):
         """Predict the labels of a given set of trajectories"""
 
     def _predict(self, data: Dataset | DatasetSlice) -> list[Any]:
-        if not self.trained:
-            raise Exception("Model is not trained yet.")
+        # TODO: check makr trained decorator
+        # if not self.trained:
+        #     raise Exception("Model is not trained yet.")
 
         return self.predict(data)
 

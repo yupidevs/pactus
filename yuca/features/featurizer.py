@@ -22,10 +22,13 @@ class Featurizer:
         self.recompute = recompute
         self.kwargs = kwargs
 
+        self.kwargs["stop_rate_threshold"] = self.kwargs.get("stop_rate_threshold", 1)
+        self.kwargs["vel_change_rate_threshold"] = self.kwargs.get("vel_change_rate_threshold", 1)
+
     def _recompute_required(self, feat_file: Path) -> bool:
         return self.recompute or not feat_file.exists()
 
-    def _recompute(self, dataset: Dataset, feat_file: Path) -> np.ndarray:
+    def _recompute(self, dataset: Dataset | DatasetSlice, feat_file: Path) -> np.ndarray:
         feats = np.stack(
             [
                 get_feat_vector(traj, self.selected, **self.kwargs)
@@ -42,12 +45,15 @@ class Featurizer:
         dataset = data.dataset
         file_name = f"{self.selected}.txt"
         feat_file = _get_path(config.DS_FEATS_DIR, dataset.name) / file_name
+        feat_file.parent.mkdir(parents=True, exist_ok=True)
 
         # recompute if required
         if self._recompute_required(feat_file):
-            feats = self._recompute(dataset, feat_file)
+            feats = self._recompute(data, feat_file)
 
-        return feats or np.loadtxt(feat_file)
+        if feats is None:
+            feats = np.loadtxt(feat_file)
+        return feats
 
     def traj2vec(self, traj: Trajectory) -> np.ndarray:
         """Computes the features vector for a given trajectory."""
