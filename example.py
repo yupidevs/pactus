@@ -1,12 +1,6 @@
-import logging
-
 from yuca import Featurizer, LangevinDataset, RandomForestModel, features
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s"
-)
-
-SEED = 0
+SEED = 0 # Random seed for reproducibility
 
 # Load Dataset
 dataset = LangevinDataset()

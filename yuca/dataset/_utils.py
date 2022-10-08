@@ -27,7 +27,7 @@ def _get_progress_log(part, total):
 
 def _create_dataset_path(dataset_name: str) -> Path:
     logging.info("Creating dataset folder for %s", dataset_name)
-    dataset_path = _get_path(cfg.DS_DIR, dataset_name)
+    dataset_path = _get_path(cfg.DS_RAW_DIR, dataset_name)
     dataset_path.mkdir(parents=True, exist_ok=True)
     return dataset_path
 
@@ -42,6 +42,9 @@ def _start_download(url: str, dataset_name: str) -> Response:
 
 def _download_until_finish(url: str, response: Response, dataset_path: Path) -> Path:
     data_length = int(response.headers.get("content-length", -1))
+    size_mb_msg = (
+        f"    Size: {data_length / 1024 ** 2:.2f} MB" if data_length != -1 else ""
+    )
     dataset_file_path = dataset_path / url.split("/")[-1]
     with open(dataset_file_path, "wb") as ds_file:
         downloaded = 0
@@ -49,13 +52,39 @@ def _download_until_finish(url: str, response: Response, dataset_path: Path) -> 
             if chunk:
                 ds_file.write(chunk)
                 downloaded += len(chunk)
-                print(_get_progress_log(downloaded, data_length), end="\r")
+                print(
+                    _get_progress_log(downloaded, data_length) + size_mb_msg, end="\r"
+                )
     return dataset_file_path
 
 
 def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
     # Make the download request
     response = _start_download(url, dataset_name)
+
+    # Chekc if the dataset is already downloaded
+    dataset_file_path = dataset_path / url.split("/")[-1]
+    if dataset_file_path.exists():
+        size = -1
+        if "content-length" in response.headers:
+            size = int(response.headers["content-length"])
+            if size == dataset_file_path.stat().st_size:
+                logging.info("Dataset already downloaded")
+                return dataset_file_path
+
+        msg = (
+            "It seems that the dataset is already downloaded, but the size is "
+            f"different.\n"
+            f"    Found: {dataset_file_path.stat().st_size / 1024 ** 2:.2f} MB\n"
+            f"    Expected: {size / 1024 ** 2:.2f} MB\n"
+        ) if size != -1 else (
+            "There is a downloaded dataset with the same name, but the download "
+            "size is unknown."
+        )
+        logging.warning(msg)
+        ans = input("Do you want to overwrite it? [y/n]: ")
+        if ans.lower() != "y":
+            return dataset_file_path
 
     # Download the dataset to a zip file
     return _download_until_finish(url, response, dataset_path)

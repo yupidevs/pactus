@@ -28,11 +28,13 @@ class Dataset(ABC):
         self.path = _get_path(config.DS_DIR, self.name)
         self._metadata = self._load_metadata()
         self.yupi_metadata: dict
+        self.dataset_dir = _get_path(config.DS_DIR, self.name)
+        self.dataset_raw_dir = _get_path(config.DS_RAW_DIR, self.name)
 
         self.trajs, self.labels = self.load()
         self.classes = set(self.labels)
 
-    def fetch(self, dataset_folder: Path) -> None:
+    def fetch(self) -> None:
         """Downloads the dataset in case needed"""
 
     @abstractmethod
@@ -142,7 +144,7 @@ class Dataset(ABC):
     def _ensure_cache(self):
         if self._refetch_required():
             logging.info("Fetching %s dataset", self.name)
-            self.fetch(_get_path(config.DS_RAW_DIR, self.name))
+            self.fetch()
             self._metadata = self._default_metadata()
             self._update_metadata()
 
@@ -188,6 +190,7 @@ class Dataset(ABC):
         stratify: bool = True,
         random_state: int | None = None,
     ) -> tuple[DatasetSlice, DatasetSlice]:
+        """Splits the dataset into train and test dataset slices"""
         assert 0 < train_size < 1, "train_size should be within 0 and 1"
 
         x_train, x_test, y_train, y_test = train_test_split(

@@ -19,12 +19,6 @@ from typing import List, NamedTuple, Tuple
 import numpy as np
 from pipeline import PipelineStep
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-
 metadata: List[dict] = []
 
 
