@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -71,9 +72,9 @@ class Dataset(ABC):
 
     def _refetch_required(self) -> bool:
         """Checks if the current cache requires a refetch."""
-        needs_refetch = self.refetch or self.metadata is None
+        needs_refetch = self.refetch or not self._has_metadata
 
-        if self.metadata is not None:
+        if self._has_metadata:
             stored_major = self.metadata["version"].split(".")[0]
             current_major = self.version.split(".")[0]
             needs_refetch = needs_refetch or stored_major != current_major
@@ -82,9 +83,9 @@ class Dataset(ABC):
 
     def _yupify_required(self) -> bool:
         """Checks if the current cache requires a reyupify."""
-        needs_yupify = self.reyupify or self.metadata is None
+        needs_yupify = self.reyupify or not self._has_metadata
 
-        if self.metadata is not None:
+        if self._has_metadata:
             stored_minor = self.metadata["version"].split(".")[1]
             current_minor = self.version.split(".")[1]
             needs_yupify = (
@@ -93,9 +94,13 @@ class Dataset(ABC):
                 or self.metadata["yupify_metadata"] is None
             )
 
+        if needs_yupify:
+            logging.info("Yupify is required for the '%s' dataset", self.name)
         return needs_yupify
 
     def _update_metadata(self):
+        logging.info("Updating metadata for %s dataset", self.name)
+        logging.info(self.metadata)
         metadata_path = self.metadata["path"]
         with open(metadata_path, "w", encoding="utf-8") as md_file:
             json.dump(self.metadata, md_file, ensure_ascii=False, indent=4)
@@ -110,6 +115,7 @@ class Dataset(ABC):
         Gets the trajectoires in a yupi format and the labels
         and stores them
         """
+        logging.info("Yupifying %s dataset", self.name)
         trajs, labels = self.yupify()
 
         trajs_paths = []
@@ -122,6 +128,7 @@ class Dataset(ABC):
 
         yupify_metadata = {"trajs_paths": trajs_paths, "labels": labels}
 
+        logging.info("Saving yupify metadata for %s dataset", self.name)
         metadata_path = str(yupi_dir / "yupify_metadata.json")
         with open(metadata_path, "w", encoding="utf-8") as md_file:
             json.dump(yupify_metadata, md_file, ensure_ascii=False, indent=4)
@@ -130,12 +137,13 @@ class Dataset(ABC):
 
     def _ensure_cache(self):
         if self._refetch_required():
+            logging.info("Fetching %s dataset", self.name)
             self.fetch(_get_path(config.DS_RAW_DIR, self.name))
             self._metadata = self._default_metadata()
             self._update_metadata()
 
         if self._yupify_required():
-            self.yupify()
+            self._yupify()
 
         self.metadata["version"] = self.version
         self._update_metadata()

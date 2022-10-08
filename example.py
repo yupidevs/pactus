@@ -1,7 +1,5 @@
 import logging
 
-from yupi import Trajectory
-
 from yuca import Featurizer, LangevinDataset, RandomForestModel, features
 
 logging.basicConfig(
