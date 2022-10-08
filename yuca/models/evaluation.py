@@ -2,23 +2,69 @@ import json
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+from sklearn.metrics import confusion_matrix
+
 from yuca import config
 from yuca.dataset import Dataset, DatasetSlice
 from yuca.dataset._utils import _get_path
 
+MAIN_SEP = "="
+SUB_SEP = "-"
+
 
 class Evaluation:
     def __init__(
-        self, model_summary: dict, data: Dataset | DatasetSlice, predictions: list[Any]
+        self,
+        model_summary: dict,
+        data: Dataset | DatasetSlice,
+        predictions: list[Any],
     ):
         self.dataset = data.dataset
         self.trajs = data.trajs
-        self.predictions = predictions
+        self.y_true = data.labels
+        self.y_pred = predictions
         self.model_summary = model_summary
+        self.classes = list(set(self.y_true))
+
+        self._confusion_matrix = confusion_matrix(
+            self.y_true, self.y_pred, labels=self.classes
+        )
+
+    def _show_confusion_matrix(self):
+        """Show the confusion matrix."""
+        print("\nConfusion matrix:\n")
+        # estimate the precision
+        precision = [np.max(row) / np.sum(row) for row in self._confusion_matrix]
+
+        # Normalize the confusion matrix by columns
+        self._confusion_matrix = self._confusion_matrix.astype("float")
+        for i in range(self._confusion_matrix.shape[0]):
+            self._confusion_matrix[:, i] /= self._confusion_matrix[:, i].sum()
+
+        # Round the values
+        # cm = np.round(cm, decimals=2)
+        classes = list(self.classes) + ["precision"]
+        col_width = 12
+
+        print(*[f"{c:<12}".format() for c in classes], sep="")
+        print(MAIN_SEP * col_width * (len(classes)))
+        for i, row in enumerate(self._confusion_matrix):
+            # get the precision
+            row = np.append(row, precision[i])
+            print(*[f"{round(c * 100, 2):<12}" for c in row], sep="")
+        print(SUB_SEP * col_width * (len(classes)))
+        print(
+            *[
+                f"{round(max(col) * 100, 2):<12}"
+                for col in self._confusion_matrix.T
+            ],
+            sep="",
+        )
 
     def show(self):
         """Show the evaluation results."""
-        raise NotImplementedError
+        self._show_confusion_matrix()
 
     def save(self, file_name: str) -> Path:
         """Save the evaluation to a file.
@@ -42,7 +88,7 @@ class Evaluation:
             "indices": [
                 int(traj.traj_id) for traj in self.trajs if traj.traj_id is not None
             ],
-            "predictions": self.predictions,
+            "predictions": self.y_pred,
             "model_summary": self.model_summary,
         }
 

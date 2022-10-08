@@ -17,9 +17,12 @@ def _get_progress_log(part, total):
     if total == -1:
         return f"Downloaded: {part / 1024 ** 2:.2f} MB"
 
-    passed = "#" * int(cfg.PROGRESS_BAR_LENGTH * part / total)
+    passed = "=" * int(cfg.PROGRESS_BAR_LENGTH * part / total)
     rest = " " * (cfg.PROGRESS_BAR_LENGTH - len(passed))
-    return f"[{passed}{rest}] {part * 100/total:.2f}%"
+    p_bar = f"[{passed}{rest}] {part * 100/total:.2f}%"
+    if part == total:
+        p_bar += "\n"
+    return p_bar
 
 
 def _create_dataset_path(dataset_name: str) -> Path:

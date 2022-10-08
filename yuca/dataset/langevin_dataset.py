@@ -34,12 +34,12 @@ class LangevinDataset(Dataset):
             "type_1": {
                 "gamma": 0.1,
                 "sigma": 0.1,
-                "count": 100,
+                "count": 1000,
             },
             "type_2": {
-                "gamma": 0.1001,
+                "gamma": 0.2,
                 "sigma": 0.1,
-                "count": 100,
+                "count": 1000,
             },
         }
 

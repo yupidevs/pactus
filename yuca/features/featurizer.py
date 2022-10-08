@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -23,37 +24,48 @@ class Featurizer:
         self.kwargs = kwargs
 
         self.kwargs["stop_rate_threshold"] = self.kwargs.get("stop_rate_threshold", 1)
-        self.kwargs["vel_change_rate_threshold"] = self.kwargs.get("vel_change_rate_threshold", 1)
+        self.kwargs["vel_change_rate_threshold"] = self.kwargs.get(
+            "vel_change_rate_threshold", 1
+        )
 
     def _recompute_required(self, feat_file: Path) -> bool:
         return self.recompute or not feat_file.exists()
 
-    def _recompute(self, dataset: Dataset | DatasetSlice, feat_file: Path) -> np.ndarray:
+    def _recompute(
+        self,
+        data: Dataset | DatasetSlice,
+        feat_file: Path,
+    ) -> np.ndarray:
+        logging.info("Recomputing features")
         feats = np.stack(
-            [
-                get_feat_vector(traj, self.selected, **self.kwargs)
-                for traj in dataset.trajs
-            ]
+            [get_feat_vector(traj, self.selected, **self.kwargs) for traj in data.trajs]
         )
         np.savetxt(str(feat_file), feats)
         return feats
 
-    def compute(self, data: Dataset | DatasetSlice) -> np.ndarray:
+    def compute(
+        self, data: Dataset | DatasetSlice
+    ) -> np.ndarray:
         """Computes the features matrix for a given dataset or slice."""
 
         feats = None
         dataset = data.dataset
+        trajs = data.trajs
         file_name = f"{self.selected}.txt"
         feat_file = _get_path(config.DS_FEATS_DIR, dataset.name) / file_name
         feat_file.parent.mkdir(parents=True, exist_ok=True)
 
         # recompute if required
         if self._recompute_required(feat_file):
-            feats = self._recompute(data, feat_file)
+            feats = self._recompute(dataset, feat_file)
 
         if feats is None:
+            logging.info("Loading features from file")
             feats = np.loadtxt(feat_file)
-        return feats
+
+        idx = np.array([int(traj.traj_id or "") for traj in trajs])
+        trajs_feats = feats[idx]
+        return trajs_feats
 
     def traj2vec(self, traj: Trajectory) -> np.ndarray:
         """Computes the features vector for a given trajectory."""

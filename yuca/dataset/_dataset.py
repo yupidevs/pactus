@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-from abc import ABC, abstractmethod
 import logging
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +11,7 @@ from yupi import Trajectory
 from yupi.core import JSONSerializer
 
 from yuca import config
-from yuca.dataset._utils import _get_path
+from yuca.dataset._utils import _get_path, _get_progress_log
 
 
 class Dataset(ABC):
@@ -95,20 +95,17 @@ class Dataset(ABC):
             )
 
         if needs_yupify:
-            logging.info("Yupify is required for the '%s' dataset", self.name)
+            logging.info("Yupify is required for the %s dataset", self.name)
         return needs_yupify
 
     def _save_json(self, path: Path, data: dict):
-        with open(path, "w+", encoding="utf-8") as md_file:
-            print(data)
+        with open(path, "w", encoding="utf-8") as md_file:
             json.dump(data, md_file, ensure_ascii=False, indent=4)
 
     def _update_metadata(self):
         logging.info("Updating metadata for %s dataset", self.name)
-        logging.info(self.metadata)
         metadata_path = Path(self.metadata["path"])
         self._save_json(metadata_path, self.metadata)
-       
 
     def _create_folder(self):
         """Create dataset folder if not exists"""
@@ -127,11 +124,13 @@ class Dataset(ABC):
         yupi_dir = _get_path(config.DS_YUPI_DIR, self.name)
         ds_dir = _get_path(config.DS_DIR, self.name)
 
+        logging.info("Saving yupified trajectories for %s dataset", self.name)
         for i, traj in enumerate(trajs):
             traj.traj_id = str(i)
             traj_path = str(yupi_dir / f"traj_{i}.json")
             JSONSerializer.save(traj, traj_path, overwrite=True)
             trajs_paths.append(traj_path)
+            print(_get_progress_log(i + 1, len(trajs)), end="\r")
 
         yupify_metadata = {"trajs_paths": trajs_paths, "labels": labels}
 
@@ -155,14 +154,23 @@ class Dataset(ABC):
 
     def _load_yupify_metadata(self):
         assert self.metadata["yupify_metadata"] is not None
+        logging.info("Loading yupify metadata for %s dataset", self.name)
         yupi_metadata_path = self.metadata["yupify_metadata"]
         with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
             self.yupi_metadata = json.load(md_file)
 
     def _load(self) -> tuple[list[Trajectory], list[Any]]:
         self._load_yupify_metadata()
+        logging.info("Loading %s dataset", self.name)
+
+        def _load_traj(traj_path, i, total):
+            print(_get_progress_log(i, total), end="\r")
+            return JSONSerializer.load(traj_path)
+
+        total = len(self.yupi_metadata["trajs_paths"])
         trajs = [
-            JSONSerializer.load(traj) for traj in self.yupi_metadata["trajs_paths"]
+            _load_traj(traj, i + 1, total)
+            for i, traj in enumerate(self.yupi_metadata["trajs_paths"])
         ]
         labels = self.yupi_metadata["labels"]
         return trajs, labels
@@ -175,12 +183,18 @@ class Dataset(ABC):
         return self._load()
 
     def split(
-        self, train_size: float, stratify: bool = True
+        self,
+        train_size: float,
+        stratify: bool = True,
+        random_state: int | None = None,
     ) -> tuple[DatasetSlice, DatasetSlice]:
         assert 0 < train_size < 1, "train_size should be within 0 and 1"
 
         x_train, x_test, y_train, y_test = train_test_split(
-            self.trajs, self.labels, stratify=self.labels if stratify else None
+            self.trajs,
+            self.labels,
+            stratify=self.labels if stratify else None,
+            random_state=random_state,
         )
 
         train_slice = DatasetSlice(self, x_train, y_train)
@@ -189,7 +203,17 @@ class Dataset(ABC):
 
 
 class DatasetSlice:
-    def __init__(self, dataset: Dataset, trajs: list[Trajectory], labels: list[Any]):
+    """A slice of a dataset"""
+
+    def __init__(
+        self,
+        dataset: Dataset,
+        trajs: list[Trajectory],
+        labels: list[Any],
+    ):
         self.dataset = dataset
         self.trajs = trajs
         self.labels = labels
+
+    def __len__(self):
+        return len(self.trajs)

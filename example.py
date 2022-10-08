@@ -6,6 +6,8 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s]: %(message)s"
 )
 
+SEED = 0
+
 # Load Dataset
 dataset = LangevinDataset()
 
@@ -18,15 +20,13 @@ model = RandomForestModel(
     max_features=16,
     n_estimators=200,
     bootstrap=False,
-    random_state=None,
+    random_state=SEED,
     warm_start=True,
     n_jobs=6,
 )
 
 # Spliting dataset
-train, test = dataset.split(0.8)
-
-print(len(train.trajs), len(train.labels))
+train, test = dataset.split(0.8, random_state=SEED)
 
 # Train the model
 model.train(data=train, cross_validation=5)
