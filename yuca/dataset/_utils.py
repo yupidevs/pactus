@@ -1,5 +1,6 @@
 import logging
 import zipfile
+import tarfile
 from pathlib import Path
 
 import requests
@@ -95,12 +96,21 @@ def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
 
 def _uncompress(dataset_name: str, dataset_file_path: Path, dataset_path: Path):
     logging.info("Extracting %s dataset", dataset_name)
-    with zipfile.ZipFile(dataset_file_path, "r") as zip_ref:
-        zip_ref.extractall(str(dataset_path))
+
+    str_path = str(dataset_file_path)
+    if str_path.endswith(".zip"):
+        with zipfile.ZipFile(dataset_file_path, "r") as zip_ref:
+            zip_ref.extractall(dataset_path)
+    elif str_path.endswith(".tar.gz"):
+        with tarfile.open(dataset_file_path, "r") as tar_ref:
+            tar_ref.extractall(dataset_path)
 
 
 def download_dataset(url: str, dataset_name: str) -> None:
     """Downloads a dataset from a url."""
+
+    if not url.endswith(".zip") and not url.endswith(".tar.gz"):
+        raise ValueError("The dataset must be a zip or tar.gz file")
 
     # Create the dataset folder if it doesn't exist
     dataset_path = _create_dataset_path(dataset_name)
