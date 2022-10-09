@@ -37,6 +37,23 @@ class Data:
     def __len__(self) -> int:
         return len(self.trajs)
 
+    def take(
+        self,
+        size: float | int,
+        stratify: bool = True,
+        shuffle: bool = True,
+        random_state: int | None = None,
+    ) -> Data:
+        """Takes a subset of the dataset."""
+        if isinstance(size, int):
+            assert 0 < size < len(self), "size should be within 0 and len(self)"
+            size /= len(self)
+
+        ans, _ = self.split(
+            size, stratify=stratify, shuffle=shuffle, random_state=random_state
+        )
+        return ans
+
     def split(
         self,
         train_size: float,
