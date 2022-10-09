@@ -23,7 +23,7 @@ def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0.0, mask=
     return x + res
 
 
-def build_transformer_model(
+def build_model(
     n_classes,
     input_shape,
     head_size,

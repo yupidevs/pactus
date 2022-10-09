@@ -1,15 +1,18 @@
-import numpy as np
 from typing import Any
 
-from yupi import Trajectory
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from tensorflow import keras
 
 from yuca.dataset import Data
 from yuca.models import Model
-from sklearn.preprocessing import LabelEncoder
-from tensorflow import keras
 from yuca.models.transformer import build_model
 
 NAME = "transformer_model"
+DEFAULT_OPTIMIZER = keras.optimizers.Adam(learning_rate=1e-2)
+DEFAULT_CALLBACKS = [
+    keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
+]
 
 
 class TransformerModel(Model):
@@ -17,49 +20,78 @@ class TransformerModel(Model):
 
     def __init__(
         self,
-        head_size=256,
-        num_heads=1,
-        ff_dim=4,
-        num_transformer_blocks=2,
-        mlp_units=None,
-        mlp_droput=0.4,
-        droput=0.25,
+        head_size: int = 256,
+        num_heads: int = 1,
+        ff_dim: int = 4,
+        num_transformer_blocks: int = 2,
+        mlp_units: list[int] | None = None,
+        mlp_droput: float = 0.4,
+        droput: float = 0.25,
         loss="categorical_crossentropy",
         optimizer=None,
-        metrics=None
+        metrics=None,
     ):
         super().__init__(NAME)
-        self.kwargs = kwargs
-        self.head_size=head_size,
-        self.num_heads=num_heads,
-        self.ff_dim=ff_dim,
-        self.num_transformer_blocks=num_transformer_blocks,
-        self.mlp_units=[128] if mlp_units is None else mlp_units,
-        self.mlp_dropout=mlp_droput,
-        self.dropout=droput,
+        self.head_size = head_size
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.num_transformer_blocks = num_transformer_blocks
+        self.mlp_units = [128] if mlp_units is None else mlp_units
+        self.mlp_dropout = mlp_droput
+        self.dropout = droput
         self.model: keras.Model
         self.loss = loss
-        self.optimizer = keras.optimizer.Adam(learning_rate=1e-2) if optimizer is None else optimizer
+        self.optimizer = DEFAULT_OPTIMIZER if optimizer is None else optimizer
         self.metrics = ["accuracy"] if metrics is None else metrics
 
-    def train(self, data: Data, cross_validation: int = 0):
-        x_train, y_train = self._get_input_data(data)
+    def train(
+        self,
+        data: Data,
+        cross_validation: int = 0,
+        epochs: int = 10,
+        batch_size: int = 32,
+        callbacks: list | None = None,
+    ):
+        x_train, y_train, mask = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
-        self.model = tr.build_model(
-            n_classes,
-            input_shape,
-            input_mask=mask,
-        )
-        model.compile(
-            loss=self.loss,
-            optimizer=self.optimizer,
-            metrics=self.metrics
+        input_shape = x_train.shape[1:]
+        callbacks = DEFAULT_CALLBACKS if callbacks is None else callbacks
+
+        self.model = (
+            build_model(
+                n_classes,
+                input_shape,
+                input_mask=mask,
+                head_size=self.head_size,
+                num_heads=self.num_heads,
+                ff_dim=self.ff_dim,
+                num_transformer_blocks=self.num_transformer_blocks,
+                mlp_units=self.mlp_units,
+                mlp_dropout=self.mlp_dropout,
+                dropout=self.dropout,
+            )
+            .compile(
+                loss=self.loss,
+                optimizer=self.optimizer,
+                metrics=self.metrics,
+            )
+            .fit(
+                x_train,
+                y_train,
+                validation_split=0.2,
+                epochs=epochs,
+                batch_size=batch_size,
+                callbacks=callbacks,
+            )
         )
 
     def predict(self, data: Data) -> list[Any]:
-        raise NotImplementedError
+        x_data, _, _ = self._get_input_data(data)
+        return self.model.predict(x_data)
 
-    def _get_input_data(self, data: Data) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _get_input_data(
+        self, data: Data
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
         """
         Process all the data and returns a x_data, y_data, mask readable
         by the transformer
@@ -69,14 +101,14 @@ class TransformerModel(Model):
         x_data = self._reshape_input(x_data)
         # mask = self._mask_data(x_data)
         return x_data, y_data, None
-    
+
     def _mask_data(self, x_data: np.ndarray) -> np.ndarray:
         raise NotImplementedError
 
-    def _encode_labels(self, labels: data: Data) -> np.ndarray:
+    def _encode_labels(self, data: Data) -> np.ndarray:
         """Encode the labels"""
         encoder = LabelEncoder()
-        encoder.fit(data.dataset.lables)
+        encoder.fit(data.dataset.labels)
         encoded_labels = encoder.transform(data.labels)
         assert isinstance(encoded_labels, np.ndarray)
 
@@ -95,7 +127,8 @@ class TransformerModel(Model):
             all_raw_data[i, :, :] = 0  # TODO: check for masking
             all_raw_data[i, : len(traj)] = traj
         return all_raw_data
-    
-    def reshape_input(self, x_data: np.ndarray) -> np.ndarray:
+
+    def _reshape_input(self, x_data: np.ndarray) -> np.ndarray:
         """Reshapes the input data to be compatible with the transformer."""
-        return x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
+        x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
+        return x_data
