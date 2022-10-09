@@ -138,7 +138,6 @@ class Dataset(Data, metaclass=ABCMeta):
         self.version = version
         self.refetch = refetch
         self.reyupify = reyupify
-        self.path = _get_path(config.DS_DIR, self.name)
         self._metadata = self._load_metadata()
         self.yupi_metadata: dict
         self.dir = _get_path(config.DS_DIR, self.name)
@@ -203,10 +202,11 @@ class Dataset(Data, metaclass=ABCMeta):
         if self._has_metadata:
             stored_minor = self.metadata["version"].split(".")[1]
             current_minor = self.version.split(".")[1]
+            yupify_matadata_file = self.dir / "yupify_metadata.json"
             needs_yupify = (
                 needs_yupify
                 or stored_minor != current_minor
-                or self.metadata["yupify_metadata"] is None
+                or not yupify_matadata_file.exists()
             )
 
         if needs_yupify:
