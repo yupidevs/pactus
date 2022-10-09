@@ -1,6 +1,8 @@
+import logging
 from typing import Any
 
 import numpy as np
+from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 
@@ -47,8 +49,9 @@ class TransformerModel(Model):
     def train(
         self,
         data: Data,
-        cross_validation: int = 0, # TODO: check cross validation
+        cross_validation: int = 0,
         epochs: int = 10,
+        validation_split: float = .2,
         batch_size: int = 32,
         callbacks: list | None = None,
     ):
@@ -57,37 +60,73 @@ class TransformerModel(Model):
         input_shape = x_train.shape[1:]
         callbacks = DEFAULT_CALLBACKS if callbacks is None else callbacks
 
-        self.model = (
-            build_model(
-                n_classes,
-                input_shape,
-                input_mask=mask,
-                head_size=self.head_size,
-                num_heads=self.num_heads,
-                ff_dim=self.ff_dim,
-                num_transformer_blocks=self.num_transformer_blocks,
-                mlp_units=self.mlp_units,
-                mlp_dropout=self.mlp_dropout,
-                dropout=self.dropout,
-            )
-            .compile(
-                loss=self.loss,
-                optimizer=self.optimizer,
-                metrics=self.metrics,
-            )
-            .fit(
+        if cross_validation == 0:
+            model = self._get_model(n_classes, input_shape, mask)
+            model.fit(
                 x_train,
                 y_train,
-                validation_split=0.2,
+                validation_split=validation_split,
                 epochs=epochs,
                 batch_size=batch_size,
                 callbacks=callbacks,
             )
-        )
+            self.model = model
+        else:
+            assert cross_validation > 1, "cross_validation must be greater than 1"
+            kfold = KFold(n_splits=cross_validation, shuffle=True)
+
+            best_acc = -1
+            fold_no = 1
+            for train_idxs, test_idxs in kfold.split(x_train, y_train):
+                x_train_fold = x_train[train_idxs]
+                y_train_fold = y_train[train_idxs]
+                model = self._get_model(n_classes, input_shape, mask)
+                model.fit(
+                    x_train_fold,
+                    y_train_fold,
+                    validation_split=validation_split,
+                    epochs=epochs,
+                    batch_size=batch_size,
+                    callbacks=callbacks,
+                )
+
+                x_test_fold = x_train[test_idxs]
+                y_test_fold = y_train[test_idxs]
+                scores = model.evaluate(x_test_fold, y_test_fold, verbose=2)
+                acc = scores[1]
+                loss = scores[0]
+
+                logging.info("Fold %d: Loss: %f, Accuracy: %f", fold_no, loss, acc)
+
+                if acc > best_acc:
+                    self.model = model
+                fold_no += 1
 
     def predict(self, data: Data) -> list[Any]:
         x_data, _, _ = self._get_input_data(data)
         return self.model.predict(x_data)
+
+    def _get_model(
+        self, n_classes: int, input_shape: tuple, mask: np.ndarray | None = None
+    ) -> keras.Model:
+        model = build_model(
+            n_classes,
+            input_shape,
+            input_mask=mask,
+            head_size=self.head_size,
+            num_heads=self.num_heads,
+            ff_dim=self.ff_dim,
+            num_transformer_blocks=self.num_transformer_blocks,
+            mlp_units=self.mlp_units,
+            mlp_dropout=self.mlp_dropout,
+            dropout=self.dropout,
+        )
+        model.compile(
+            loss=self.loss,
+            optimizer=self.optimizer,
+            metrics=self.metrics,
+        )
+        return model
 
     def _get_input_data(
         self, data: Data
@@ -130,5 +169,4 @@ class TransformerModel(Model):
 
     def _reshape_input(self, x_data: np.ndarray) -> np.ndarray:
         """Reshapes the input data to be compatible with the transformer."""
-        x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
-        return x_data
+        return x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
