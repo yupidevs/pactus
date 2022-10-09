@@ -1,8 +1,10 @@
-from string import Template
 import logging
 from pathlib import Path
+from string import Template
+
 import numpy as np
 from yupi import Trajectory
+
 from yuca.dataset import Dataset
 from yuca.dataset._utils import download_dataset
 
@@ -42,7 +44,6 @@ class MnistStrokeDataset(Dataset):
 
         return Trajectory(points=points)
 
-
     def _read_trajs(
         self, sequence_folder: Path, template: Template, count: int
     ) -> list[Trajectory]:
@@ -71,7 +72,7 @@ class MnistStrokeDataset(Dataset):
         test_labels_path = self.raw_dir / "t10k-labels-idx1-ubyte"
 
         logging.info("Yupifying train dataset...")
-        train_template = Template('trainimg-$id-points.txt')
+        train_template = Template("trainimg-$id-points.txt")
         trajs_train, labels_train = self._yupify_mnist(
             sequence_path, train_labels_path, template=train_template, count=60000
         )

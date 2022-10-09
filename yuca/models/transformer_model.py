@@ -51,7 +51,7 @@ class TransformerModel(Model):
         data: Data,
         cross_validation: int = 0,
         epochs: int = 10,
-        validation_split: float = .2,
+        validation_split: float = 0.2,
         batch_size: int = 32,
         callbacks: list | None = None,
     ):
