@@ -4,7 +4,7 @@ from yupi import DiffMethod, Trajectory, WindowType
 
 from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset, MnistStrokeDataset
 from yuca.features import Featurizer
-from yuca.models import Model, RandomForestModel
+from yuca.models import Model, RandomForestModel, TransformerModel
 
 __version__ = "0.1.0"
 

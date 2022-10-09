@@ -47,7 +47,7 @@ class TransformerModel(Model):
     def train(
         self,
         data: Data,
-        cross_validation: int = 0,
+        cross_validation: int = 0, # TODO: check cross validation
         epochs: int = 10,
         batch_size: int = 32,
         callbacks: list | None = None,
