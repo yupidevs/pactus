@@ -2,7 +2,7 @@ import logging
 
 from yupi import DiffMethod, Trajectory, WindowType
 
-from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset
+from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset, MnistStrokeDataset
 from yuca.features import Featurizer
 from yuca.models import Model, RandomForestModel
 
