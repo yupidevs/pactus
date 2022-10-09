@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from abc import ABCMeta, abstractmethod
+from collections import Counter
 from pathlib import Path
 from typing import Any, Callable
 
@@ -26,7 +27,12 @@ class Data:
         self.dataset = dataset
         self.trajs = trajs
         self.labels = labels
-        self.classes = set(self.labels)
+        self.label_counts = Counter(labels)
+
+    @property
+    def classes(self) -> list[Any]:
+        """Classes present in the dataset."""
+        return list(self.label_counts.keys())
 
     def __len__(self) -> int:
         return len(self.trajs)
@@ -118,6 +124,7 @@ class Data:
             if func(traj, label):
                 trajs.append(traj)
                 labels.append(label)
+        logging.info("Filtered %d of %d trajectories", len(trajs), len(self))
         return Data(self.dataset, trajs, labels)
 
 

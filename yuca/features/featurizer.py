@@ -5,7 +5,7 @@ import numpy as np
 from yupi import Trajectory
 
 from yuca import config
-from yuca.dataset import Dataset, DatasetSlice
+from yuca.dataset import Data
 from yuca.dataset._utils import _get_path
 from yuca.features.features import get_feat_vector
 
@@ -33,7 +33,7 @@ class Featurizer:
 
     def _recompute(
         self,
-        data: Dataset | DatasetSlice,
+        data: Data,
         feat_file: Path,
     ) -> np.ndarray:
         logging.info("Recomputing features")
@@ -43,7 +43,7 @@ class Featurizer:
         np.savetxt(str(feat_file), feats)
         return feats
 
-    def compute(self, data: Dataset | DatasetSlice) -> np.ndarray:
+    def compute(self, data: Data) -> np.ndarray:
         """Computes the features matrix for a given dataset or slice."""
 
         feats = None

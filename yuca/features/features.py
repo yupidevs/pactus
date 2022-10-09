@@ -20,7 +20,7 @@ def __new_feat(feat_name: str | None = None) -> int:
     return feat_val
 
 
-def __all_feat_val():
+def __all_feat_val() -> int:
     return __new_feat() - 1
 
 
@@ -219,6 +219,14 @@ def get_feat(traj: Trajectory, feat: int, **kwargs) -> float:
         values = np.diff(angle) / delta_t[2:]
 
     assert values is not None, "Feature not found"
+    assert (
+        isinstance(values, Vector) and values.shape[0] > 0
+    ), f"Empty values for feature {FEAT_DICT[feat]}"
+
+    assert (
+        len(values.shape) == 1
+    ), f"Only 1D vectors are supported. Feature: {FEAT_DICT[feat]}"
+    assert np.nan not in values, f"NaN values for feature {FEAT_DICT[feat]}"
 
     if feat & MEAN_FEATS:
         return float(np.mean(values))

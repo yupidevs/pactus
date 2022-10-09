@@ -90,8 +90,8 @@ class GeoLifeDataset(Dataset):
 
             # Register outside label bounds
             elif label.start_dt < reg_dt:
-                # Save the trajectory if it has at least 3 points
-                if len(traj) > 3:
+                # Save the trajectory if it has at least 5 points
+                if len(traj) > 5:
                     raw_metadata.append(
                         {
                             "id": f"{usr_folder.name}_{label_idx}",
@@ -134,21 +134,3 @@ class GeoLifeDataset(Dataset):
         end_dt = datetime.strptime(f"{items[2]} {items[3]}", "%Y/%m/%d %H:%M:%S")
         clsf = items[4]
         return LabelData(start_dt, end_dt, clsf)
-
-
-def get_selected_data(metadata: list[dict]) -> list[dict]:
-    """Filters the trajectories to be used"""
-    classes = {"car", "taxi", "bus", "walk", "bike", "subway", "train"}
-    filter_data = [
-        traj
-        for traj in metadata
-        if traj["label"] in classes
-        if traj["label"] in classes and traj["length"] > 30 and traj["mean_dt"] <= 8
-    ]
-    final_data = []
-    for traj_md in filter_data:
-        # Join similar labels
-        if traj_md["label"] == "taxi" or traj_md["label"] == "bus":
-            traj_md["label"] = "bus-taxi"
-        final_data.append(traj_md)
-    return final_data

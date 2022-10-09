@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from yupi import Trajectory
 
-from yuca.dataset import Dataset, DatasetSlice
+from yuca.dataset import Data
 from yuca.features.featurizer import Featurizer
 from yuca.models import Model
 
@@ -21,12 +21,12 @@ class RandomForestModel(Model):
         self.rfc = RandomForestClassifier(**kwargs)
         self.grid: GridSearchCV
 
-    def train(self, data: Dataset | DatasetSlice, cross_validation: int = 0):
+    def train(self, data: Data, cross_validation: int = 0):
         x_data = self.featurizer.compute(data)
         self.grid = GridSearchCV(self.rfc, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
 
-    def predict(self, data: Dataset | DatasetSlice) -> list[Any]:
+    def predict(self, data: Data) -> list[Any]:
         x_data = self.featurizer.compute(data)
         return self.grid.predict(x_data)
 

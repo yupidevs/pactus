@@ -8,14 +8,11 @@ dataset = LangevinDataset()
 # Select the desired features to be extracted from the trajectories
 featurizer = Featurizer(selected=features.ALL)
 
-# Defining models
+# Defining the model
 model = RandomForestModel(
     featurizer=featurizer,
-    max_features=16,
-    n_estimators=200,
     bootstrap=False,
     random_state=SEED,
-    warm_start=True,
     n_jobs=6,
 )
 

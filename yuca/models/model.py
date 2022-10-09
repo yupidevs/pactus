@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
-from yuca.dataset import Dataset, DatasetSlice
+from yuca.dataset import Data, Dataset
 from yuca.models.evaluation import Evaluation
 
 
@@ -31,25 +31,25 @@ class Model(ABC):
 
     @abstractmethod
     @_mark_trained
-    def train(self, data: Dataset | DatasetSlice, cross_validation: int = 0):
+    def train(self, data: Data, cross_validation: int = 0):
         """Train the model using a given dataset"""
 
     @abstractmethod
-    def predict(self, data: Dataset | DatasetSlice) -> list[Any]:
+    def predict(self, data: Data) -> list[Any]:
         """Predict the labels of a given set of trajectories"""
 
     def save(self, path: str):
         """Save the model to a given path"""
         raise NotImplementedError
 
-    def _predict(self, data: Dataset | DatasetSlice) -> list[Any]:
+    def _predict(self, data: Data) -> list[Any]:
         # TODO: check mark trained decorator
         # if not self.trained:
         #     raise Exception("Model is not trained yet.")
 
         return self.predict(data)
 
-    def evaluate(self, data: Dataset | DatasetSlice) -> Evaluation:
+    def evaluate(self, data: Data) -> Evaluation:
         """Evaluate the trained model"""
 
         logging.info("Evaluating the %s model", self.name)

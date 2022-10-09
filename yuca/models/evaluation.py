@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix
 
 from yuca import config
-from yuca.dataset import Dataset, DatasetSlice
+from yuca.dataset import Data
 from yuca.dataset._utils import _get_path
 
 MAIN_SEP = "="
@@ -17,7 +17,7 @@ class Evaluation:
     def __init__(
         self,
         model_summary: dict,
-        data: Dataset | DatasetSlice,
+        data: Data,
         predictions: list[Any],
     ):
         self.dataset = data.dataset
