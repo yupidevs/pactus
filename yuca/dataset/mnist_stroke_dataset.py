@@ -1,5 +1,3 @@
-import numpy as np
-
 from yuca.dataset import Dataset
 from yuca.dataset._utils import download_dataset
 
