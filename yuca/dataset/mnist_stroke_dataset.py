@@ -8,7 +8,12 @@ DOWNLOAD_URL = (
     "https://github.com/edwin-de-jong/mnist-digits-stroke-sequence-data/"
     "raw/master/sequences.tar.gz"
 )
-
+TRAIN_LABELS_URL = (
+    "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz"
+)
+TEST_LABELS_URL = (
+    "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz"
+)
 
 class MnistStrokeDataset(Dataset):
     """Class for the MNIST stroke sequence dataset."""
@@ -18,6 +23,8 @@ class MnistStrokeDataset(Dataset):
 
     def fetch(self) -> None:
         download_dataset(DOWNLOAD_URL, self.name)
+        download_dataset(TRAIN_LABELS_URL, self.name)
+        download_dataset(TEST_LABELS_URL, self.name)
 
     def yupify(self):
         raise NotImplementedError
