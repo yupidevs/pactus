@@ -185,6 +185,34 @@ class Dataset(Data, metaclass=ABCMeta):
     def _has_metadata(self) -> bool:
         return self._metadata is not None
 
+    def root_take(
+        self,
+        size: float | int,
+        stratify: bool = True,
+        shuffle: bool = True,
+        random_state: int | None = None,
+    ) -> Dataset:
+        """Takes a subset of the dataset."""
+        ans = self.take(
+            size=size, stratify=stratify, shuffle=shuffle, random_state=random_state
+        )
+        super().__init__(self, ans.trajs, ans.labels)
+        return self
+
+    def root_filter(self, func: Callable[[Trajectory, Any], bool]) -> Dataset:
+        """Filters the dataset based on a function."""
+        ans = self.filter(func)
+        super().__init__(self, ans.trajs, ans.labels)
+        return self
+
+    def root_map(
+        self, func: Callable[[Trajectory, Any], tuple[Trajectory, Any]]
+    ) -> Dataset:
+        """Applies a function to each trajectory and label pair."""
+        ans = self.map(func)
+        super().__init__(self, ans.trajs, ans.labels)
+        return self
+
     def _default_metadata(self) -> dict:
         metadata = {
             "name": self.name,
