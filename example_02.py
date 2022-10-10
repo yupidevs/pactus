@@ -1,4 +1,12 @@
-from yuca import Featurizer, GeoLifeDataset, RandomForestModel, features
+from yuca import (
+    DecisionTreeModel,
+    Featurizer,
+    GeoLifeDataset,
+    KNeighborsModel,
+    RandomForestModel,
+    SVMModel,
+    features,
+)
 
 SEED = 0  # Random seed for reproducibility
 
@@ -8,16 +16,32 @@ dataset = GeoLifeDataset()
 # Select the desired features to be extracted from the trajectories
 featurizer = Featurizer(selected=features.ALL)
 
-# Defining the model
-model = RandomForestModel(
-    featurizer=featurizer,
-    max_features=16,
-    n_estimators=200,
-    bootstrap=False,
-    random_state=SEED,
-    warm_start=True,
-    n_jobs=6,
-)
+# Defining the models
+models = [
+    KNeighborsModel(
+        featurizer=featurizer,
+        n_neighbors=7,
+    ),
+    DecisionTreeModel(
+        featurizer=featurizer,
+        max_depth=7,
+    ),
+    SVMModel(
+        featurizer=featurizer,
+        C=8,
+        gamma=5,
+    ),
+    RandomForestModel(
+        featurizer=featurizer,
+        max_features=16,
+        n_estimators=200,
+        bootstrap=False,
+        random_state=SEED,
+        warm_start=True,
+        n_jobs=6,
+    ),
+]
+
 
 # Preprocess the dataset and split it into train and test sets
 use_classes = {"car", "taxi-bus", "walk", "bike", "subway", "train"}
@@ -32,11 +56,13 @@ train, test = (
     .split(train_size=0.7, random_state=SEED)
 )
 
-# Train the model
-model.train(data=train, cross_validation=5)
 
-# Evaluate the model on a test dataset
-evaluation = model.evaluate(test)
+for model in models:
+    # Train the model
+    model.train(data=train, cross_validation=5)
 
-# Print the evaluation
-evaluation.show()
+    # Evaluate the model on a test dataset
+    evaluation = model.evaluate(test)
+
+    # Print the evaluation
+    evaluation.show()
