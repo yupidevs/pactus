@@ -5,8 +5,7 @@ from string import Template
 import numpy as np
 from yupi import Trajectory
 
-from yuca.dataset import Dataset
-from yuca.dataset._utils import download_dataset
+from yuca.dataset import Dataset, download_dataset
 
 # Dataset metadata
 NAME = "mnist_stroke"
