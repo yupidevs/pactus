@@ -17,7 +17,7 @@ model = TransformerModel(
 )
 
 # Split into train and test sets
-train, test = dataset.split(0.8, random_state=SEED)
+train, test = dataset.cut(60_000)
 
 # Train the model
 checkpoint = keras.callbacks.ModelCheckpoint(

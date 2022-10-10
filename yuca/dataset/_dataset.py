@@ -54,9 +54,28 @@ class Data:
         )
         return ans
 
+    def cut(self, size: float | int):
+        """
+        Similar to split, but without shuffle, stratify, etc. Just slices the
+        dataset into two parts.
+        """
+        if isinstance(size, float):
+            assert 0 < size < 1, "size should be within 0 and 1 if float"
+            size = int(len(self) * size)
+        else:
+            assert (
+                0 < size < len(self)
+            ), "size should be within 0 and the dataset size if int"
+
+        left, right = self.trajs[:size], self.trajs[size:]
+        left_labels, right_labels = self.labels[:size], self.labels[size:]
+        left_d = Data(self.dataset, left, left_labels)
+        right_d = Data(self.dataset, right, right_labels)
+        return left_d, right_d
+
     def split(
         self,
-        train_size: float,
+        train_size: float | int = 0.8,
         stratify: bool = True,
         shuffle: bool = True,
         random_state: int | None = None,
@@ -68,8 +87,10 @@ class Data:
 
         Parameters
         ----------
-        train_size : float
+        train_size : float | int, optional
             The proportion of the dataset to include in the train split.
+            If float, should be between 0.0 and 1.0, if int, represents the
+            absolute number of train samples. By default 0.8.
         stratify : bool, optional
             If True, the split will be stratified according to the labels,
             by default True
@@ -83,7 +104,13 @@ class Data:
         tuple[Data, Data]
             A tuple with the train and test Data objects.
         """
-        assert 0 < train_size < 1, "train_size should be within 0 and 1"
+        if isinstance(train_size, int):
+            assert (
+                0 < train_size < len(self)
+            ), "train_size should be within 0 and the dataset size if int"
+            train_size /= len(self)
+        else:
+            assert 0 < train_size < 1, "train_size should be within 0 and 1 if float"
 
         x_train, x_test, y_train, y_test = train_test_split(
             self.trajs,
