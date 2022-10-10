@@ -4,7 +4,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
-from yuca.dataset import Data, Dataset
+from yuca.dataset import Data
 from yuca.models.evaluation import Evaluation
 
 
@@ -21,7 +21,6 @@ def _mark_trained(func):
 
 
 class Model(ABC):
-
     """Abstract class for models."""
 
     def __init__(self, name: str):

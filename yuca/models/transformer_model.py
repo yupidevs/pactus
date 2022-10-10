@@ -47,7 +47,7 @@ class TransformerModel(Model):
         self.loss = loss
         self.optimizer = DEFAULT_OPTIMIZER if optimizer is None else optimizer
         self.metrics = ["accuracy"] if metrics is None else metrics
-        self.max_traj_len = max_traj_len,
+        self.max_traj_len = max_traj_len
         self.skip_long_trajs = skip_long_trajs
 
     def train(
@@ -167,11 +167,16 @@ class TransformerModel(Model):
         if self.max_traj_len > 0:
             max_len = self.max_traj_len
         raw_data = [np.hstack((traj.r, np.reshape(traj.t, (-1, 1)))) for traj in trajs]
+        if self.skip_long_trajs:
+            raw_data = [traj for traj in raw_data if traj.shape[0] <= max_len]
+        assert len(raw_data) > 0, "No trajectories to train on"
+        data_count: int = len(raw_data)
         all_raw_data = np.zeros((len(raw_data), max_len, 3))
         for i, traj in enumerate(raw_data):
             traj = traj[:max_len]
             all_raw_data[i, :, :] = 0  # TODO: check for masking
             all_raw_data[i, : traj.shape[0]] = traj
+        print(f"Using {data_count} trajectories")
         return all_raw_data
 
     def _reshape_input(self, x_data: np.ndarray) -> np.ndarray:
