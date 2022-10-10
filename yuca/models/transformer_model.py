@@ -32,6 +32,8 @@ class TransformerModel(Model):
         loss="categorical_crossentropy",
         optimizer=None,
         metrics=None,
+        max_traj_len: int = -1,
+        skip_long_trajs: bool = False,
     ):
         super().__init__(NAME)
         self.head_size = head_size
@@ -45,6 +47,8 @@ class TransformerModel(Model):
         self.loss = loss
         self.optimizer = DEFAULT_OPTIMIZER if optimizer is None else optimizer
         self.metrics = ["accuracy"] if metrics is None else metrics
+        self.max_traj_len = max_traj_len,
+        self.skip_long_trajs = skip_long_trajs
 
     def train(
         self,
@@ -160,11 +164,14 @@ class TransformerModel(Model):
         """Extracts the raw data from the yupi trajectories"""
         trajs = data.trajs
         max_len = np.max([len(traj) for traj in data.dataset.trajs])
+        if self.max_traj_len > 0:
+            max_len = self.max_traj_len
         raw_data = [np.hstack((traj.r, np.reshape(traj.t, (-1, 1)))) for traj in trajs]
         all_raw_data = np.zeros((len(raw_data), max_len, 3))
         for i, traj in enumerate(raw_data):
+            traj = traj[:max_len]
             all_raw_data[i, :, :] = 0  # TODO: check for masking
-            all_raw_data[i, : len(traj)] = traj
+            all_raw_data[i, : traj.shape[0]] = traj
         return all_raw_data
 
     def _reshape_input(self, x_data: np.ndarray) -> np.ndarray:
