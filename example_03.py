@@ -20,7 +20,14 @@ model = TransformerModel(
 train, test = dataset.split(0.8, random_state=SEED)
 
 # Train the model
-model.train(train, epochs=150, batch_size=64)
+checkpoint = keras.callbacks.ModelCheckpoint(
+    "partialy_trained_model_mnist_stroke.h5",
+    monitor="loss",
+    verbose=1,
+    save_best_only=True,
+    mode="min",
+)
+model.train(train, epochs=150, batch_size=64, checkpoint=checkpoint)
 
 # Evaluate the model on a test dataset
 evaluation = model.evaluate(test)

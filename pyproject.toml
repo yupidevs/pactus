@@ -5,9 +5,8 @@ authors = [
     "Gustavo Viera-López <gvieralopez@gmail.com>",
     "Alfredo Reyes <areyes@fisica.uh.cu>",
     "Jorge Morgado <jorge.morgadov@gmail.com>",
-    "Ernesto Altshuler <ealtshuler@fisica.uh.cu>"
 ]
-description = "Benchmark to evaluate Trajectory Classification Algorithm"
+description = "Framework to evaluate Trajectory Classification Algorithms"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/yupidevs/traj-classification"
@@ -17,7 +16,7 @@ keywords = ["trajectory", "classification"]
 python = "^3.7"
 numpy = ">=1.16.5"
 sklearn = ">=1.1.1"
-yupi = ">=0.11.0"
+yupi = ">=0.11.1"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.2.2"
@@ -33,7 +32,6 @@ known_first_party = ["yuca"]
 target-version = ["py37"]
 
 [tool.pylint."MESSAGES CONTROL"]
-extension-pkg-whitelist = ["cv2"]
 max-line-length = 88
 
 [build-system]

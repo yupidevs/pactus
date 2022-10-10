@@ -1,10 +1,12 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
+from tensorflow.keras.callbacks import ModelCheckpoint
 
 from yuca.dataset import Data
 from yuca.models import Model
@@ -58,14 +60,25 @@ class TransformerModel(Model):
         validation_split: float = 0.2,
         batch_size: int = 32,
         callbacks: list | None = None,
+        checkpoint: keras.callbacks.ModelCheckpoint | None = None,
     ):
         x_train, y_train, mask = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
         input_shape = x_train.shape[1:]
         callbacks = DEFAULT_CALLBACKS if callbacks is None else callbacks
+        model_path = None
+        if checkpoint is not None:
+            callbacks.append(checkpoint)
+            if Path(checkpoint.filepath).exists():
+                logging.info("Loading model from checkpoint %s", checkpoint.filepath)
+                model_path = checkpoint.filepath
 
         if cross_validation == 0:
-            model = self._get_model(n_classes, input_shape, mask)
+            model = (
+                self._get_model(n_classes, input_shape, mask)
+                if model_path is None
+                else keras.models.load_model(model_path)
+            )
             model.fit(
                 x_train,
                 y_train,
