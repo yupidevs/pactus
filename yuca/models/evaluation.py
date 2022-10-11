@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, List
 
 import numpy as np
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 
 from yuca import config
 from yuca.dataset import Data
@@ -30,12 +30,18 @@ class Evaluation:
         self._confusion_matrix = confusion_matrix(
             self.y_true, self.y_pred, labels=self.classes
         )
+        (
+            self.precision,
+            self.recall,
+            self.f_score,
+            self.support,
+        ) = precision_recall_fscore_support(
+            self.y_true, self.y_pred, labels=self.classes
+        )
 
     def _show_confusion_matrix(self):
         """Show the confusion matrix."""
         print("\nConfusion matrix:\n")
-        # estimate the precision
-        precision = [np.max(row) / np.sum(row) for row in self._confusion_matrix]
 
         # Normalize the confusion matrix by columns
         self._confusion_matrix = self._confusion_matrix.astype("float")
@@ -51,16 +57,19 @@ class Evaluation:
         print(MAIN_SEP * col_width * (len(classes)))
         for i, row in enumerate(self._confusion_matrix):
             # get the precision
-            row = np.append(row, precision[i])
+            row = np.append(row, self.precision[i])
             print(*[f"{round(c * 100, 2):<12}" for c in row], sep="")
         print(SUB_SEP * col_width * (len(classes)))
         print(
-            *[f"{round(max(col) * 100, 2):<12}" for col in self._confusion_matrix.T],
+            *[f"{round(rc * 100, 2):<12}" for rc in self.recall],
             sep="",
         )
 
     def show(self):
         """Show the evaluation results."""
+        print()
+        print("Avg. Precision:", np.mean(self.precision))
+        print("Avg. Recall:", np.mean(self.recall))
         self._show_confusion_matrix()
 
     def save(self, file_name: str) -> Path:
