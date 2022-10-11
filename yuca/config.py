@@ -1,6 +1,7 @@
 """
 General configurations
 """
+import os
 from pathlib import Path
 
 # -----------------------------------------------------------------------------
@@ -33,7 +34,11 @@ PROGRESS_BAR_LENGTH = 50
 #          │   └── [serialized yupi trajectories]
 #          └── metadata.json
 #
-CACHE_PATH = str(Path(__file__).parent / ".cache")
+CACHE_PATH = (
+    str(Path(__file__).parent / ".cache")
+    if os.environ["YUCA_CACHE_PATH"] == ""
+    else os.environ["YUCA_CACHE_PATH"]
+)
 DS_BASE_DIR = CACHE_PATH + "/datasets"
 DS_DIR = DS_BASE_DIR + "/{0}"
 DS_METADATA_FILE = DS_DIR + "/metadata.json"
