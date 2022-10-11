@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from yuca.dataset import Data
 from yuca.models.evaluation import Evaluation
@@ -34,14 +34,14 @@ class Model(ABC):
         """Train the model using a given dataset"""
 
     @abstractmethod
-    def predict(self, data: Data) -> list[Any]:
+    def predict(self, data: Data) -> List[Any]:
         """Predict the labels of a given set of trajectories"""
 
     def save(self, path: str):
         """Save the model to a given path"""
         raise NotImplementedError
 
-    def _predict(self, data: Data) -> list[Any]:
+    def _predict(self, data: Data) -> List[Any]:
         # TODO: check mark trained decorator
         # if not self.trained:
         #     raise Exception("Model is not trained yet.")

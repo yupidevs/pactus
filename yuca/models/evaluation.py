@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
@@ -18,7 +18,7 @@ class Evaluation:
         self,
         model_summary: dict,
         data: Data,
-        predictions: list[Any],
+        predictions: List[Any],
     ):
         self.dataset = data.dataset
         self.trajs = data.trajs

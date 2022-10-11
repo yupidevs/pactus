@@ -5,7 +5,7 @@ import logging
 from abc import ABCMeta, abstractmethod
 from collections import Counter
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, List, Tuple, Union
 
 from sklearn.model_selection import train_test_split
 from yupi import Trajectory
@@ -22,7 +22,7 @@ class Data:
     """
 
     def __init__(
-        self, dataset: Dataset, trajs: list[Trajectory], labels: list[Any]
+        self, dataset: Dataset, trajs: List[Trajectory], labels: List[Any]
     ) -> None:
         self.dataset = dataset
         self.trajs = trajs
@@ -30,7 +30,7 @@ class Data:
         self.label_counts = Counter(labels)
 
     @property
-    def classes(self) -> list[Any]:
+    def classes(self) -> List[Any]:
         """Classes present in the dataset."""
         return list(self.label_counts.keys())
 
@@ -39,10 +39,10 @@ class Data:
 
     def take(
         self,
-        size: float | int,
+        size: Union[float, int],
         stratify: bool = True,
         shuffle: bool = True,
-        random_state: int | None = None,
+        random_state: Union[int, None] = None,
     ) -> Data:
         """Takes a subset of the dataset."""
         if isinstance(size, int):
@@ -54,7 +54,7 @@ class Data:
         )
         return ans
 
-    def cut(self, size: float | int):
+    def cut(self, size: Union[float, int]):
         """
         Similar to split, but without shuffle, stratify, etc. Just slices the
         dataset into two parts.
@@ -75,11 +75,11 @@ class Data:
 
     def split(
         self,
-        train_size: float | int = 0.8,
+        train_size: Union[float, int] = 0.8,
         stratify: bool = True,
         shuffle: bool = True,
-        random_state: int | None = None,
-    ) -> tuple[Data, Data]:
+        random_state: Union[int, None] = None,
+    ) -> Tuple[Data, Data]:
         """
         Splits the dataset into train and test dataset slices.
 
@@ -87,7 +87,7 @@ class Data:
 
         Parameters
         ----------
-        train_size : float | int, optional
+        train_size : Union[float, int], optional
             The proportion of the dataset to include in the train split.
             If float, should be between 0.0 and 1.0, if int, represents the
             absolute number of train samples. By default 0.8.
@@ -96,7 +96,7 @@ class Data:
             by default True
         shuffle : bool, optional
             If True, the split will be shuffled, by default True
-        random_state : int | None, optional
+        random_state : Union[int, None], optional
             Random seed for reproducibility, by default None
 
         Returns
@@ -125,7 +125,7 @@ class Data:
         test_data = Data(self.dataset, x_test, y_test)
         return train_data, test_data
 
-    def map(self, func: Callable[[Trajectory, Any], tuple[Trajectory, Any]]) -> Data:
+    def map(self, func: Callable[[Trajectory, Any], Tuple[Trajectory, Any]]) -> Data:
         """
         Applies a function to each trajectory and label pair.
 
@@ -194,7 +194,7 @@ class Dataset(Data, metaclass=ABCMeta):
         """Downloads the dataset in case needed"""
 
     @abstractmethod
-    def yupify(self) -> tuple[list[Trajectory], list[Any]]:
+    def yupify(self) -> tuple[List[Trajectory], List[Any]]:
         """Parses or generates the dataset and convert it to yupi trajectories"""
 
     def __len__(self):
@@ -221,7 +221,7 @@ class Dataset(Data, metaclass=ABCMeta):
         }
         return metadata
 
-    def _load_metadata(self) -> dict | None:
+    def _load_metadata(self) -> Union[dict, None]:
         metadata_path = _get_path(config.DS_METADATA_FILE, self.name)
         if not metadata_path.exists():
             return None
@@ -318,7 +318,7 @@ class Dataset(Data, metaclass=ABCMeta):
         with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
             self.yupi_metadata = json.load(md_file)
 
-    def _load(self) -> tuple[list[Trajectory], list[Any]]:
+    def _load(self) -> tuple[List[Trajectory], List[Any]]:
         self._load_yupify_metadata()
         logging.info("Loading %s dataset", self.name)
 
@@ -334,7 +334,7 @@ class Dataset(Data, metaclass=ABCMeta):
         labels = self.yupi_metadata["labels"]
         return trajs, labels
 
-    def load(self) -> tuple[list[Trajectory], list[Any]]:
+    def load(self) -> tuple[List[Trajectory], List[Any]]:
         """Loads the dataset"""
 
         self._create_folder()

@@ -1,7 +1,7 @@
 from collections import Counter
 from functools import reduce
 from operator import or_
-from typing import Callable
+from typing import Callable, Union
 
 import numpy as np
 from yupi.stats._stats import _kurtosis
@@ -11,7 +11,7 @@ FEAT_DICT = {}
 __FEAT_VAL = 1
 
 
-def __new_feat(feat_name: str | None = None) -> int:
+def __new_feat(feat_name: Union[str, None] = None) -> int:
     global __FEAT_VAL  # pylint: disable=global-statement
     if feat_name is not None:
         FEAT_DICT[__FEAT_VAL] = feat_name
@@ -152,7 +152,7 @@ FEAT_VALUES = list(FEAT_DICT.keys())
 
 
 def _acc_k(values: Vector, k: int, mean: float) -> float:
-    N = len(values)
+    N = len(values)  # pylint: disable=invalid-name
     _sum = np.sum((values[1 : N - k] - mean) * (values[1 + k : N] - mean))
     return _sum / N
 
@@ -276,7 +276,7 @@ def get_feat_vector(traj: Trajectory, feats: int, **kwargs) -> np.ndarray:
 
     Returns
     -------
-    list[float]
+    np.ndarray
         Feature vector.
     """
     return np.array(

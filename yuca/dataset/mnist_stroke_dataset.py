@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from string import Template
+from typing import List, Tuple
 
 import numpy as np
 from yupi import Trajectory
@@ -29,7 +30,7 @@ class MnistStrokeDataset(Dataset):
         download_dataset(TRAIN_LABELS_URL, self.name)
         download_dataset(TEST_LABELS_URL, self.name)
 
-    def _read_labels(self, label_file: Path, count: int) -> list[str]:
+    def _read_labels(self, label_file: Path, count: int) -> List[str]:
         with open(label_file, "rb") as f:
             f.read(8)  # discard header info
             return [str(l) for l in f.read(count)]
@@ -45,7 +46,7 @@ class MnistStrokeDataset(Dataset):
 
     def _read_trajs(
         self, sequence_folder: Path, template: Template, count: int
-    ) -> list[Trajectory]:
+    ) -> List[Trajectory]:
         trajs = []
         for i in range(count):
             traj_path = sequence_folder / template.substitute(id=i)
@@ -55,7 +56,7 @@ class MnistStrokeDataset(Dataset):
 
     def _yupify_mnist(
         self, sequence_folder: Path, label_file: Path, template: Template, count: int
-    ) -> tuple[list[Trajectory], list[str]]:
+    ) -> Tuple[List[Trajectory], List[str]]:
         """Yupifies a part of the dataset"""
 
         labels = self._read_labels(label_file, count)
@@ -63,7 +64,7 @@ class MnistStrokeDataset(Dataset):
 
         return trajs, labels
 
-    def yupify(self) -> tuple[list[Trajectory], list[str]]:
+    def yupify(self) -> Tuple[List[Trajectory], List[str]]:
         # Loads the raw data and preprocess it
         logging.info("Preprocessing MNIST stroke raw data")
         sequence_path = self.raw_dir / "sequences"

@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Tuple, Union
 
 import numpy as np
 from sklearn.model_selection import KFold
@@ -28,7 +28,7 @@ class TransformerModel(Model):
         num_heads: int = 1,
         ff_dim: int = 4,
         num_transformer_blocks: int = 2,
-        mlp_units: list[int] | None = None,
+        mlp_units: Union[List[int], None] = None,
         mlp_droput: float = 0.4,
         droput: float = 0.25,
         loss="categorical_crossentropy",
@@ -59,8 +59,8 @@ class TransformerModel(Model):
         epochs: int = 10,
         validation_split: float = 0.2,
         batch_size: int = 32,
-        callbacks: list | None = None,
-        checkpoint: keras.callbacks.ModelCheckpoint | None = None,
+        callbacks: Union[list, None] = None,
+        checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
     ):
         x_train, y_train, mask = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
@@ -119,12 +119,12 @@ class TransformerModel(Model):
                     self.model = model
                 fold_no += 1
 
-    def predict(self, data: Data) -> list[Any]:
+    def predict(self, data: Data) -> List[Any]:
         x_data, _, _ = self._get_input_data(data)
         return self.model.predict(x_data)
 
     def _get_model(
-        self, n_classes: int, input_shape: tuple, mask: np.ndarray | None = None
+        self, n_classes: int, input_shape: tuple, mask: Union[np.ndarray, None] = None
     ) -> keras.Model:
         model = build_model(
             n_classes,
@@ -147,7 +147,7 @@ class TransformerModel(Model):
 
     def _get_input_data(
         self, data: Data
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
+    ) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
         """
         Process all the data and returns a x_data, y_data, mask readable
         by the transformer

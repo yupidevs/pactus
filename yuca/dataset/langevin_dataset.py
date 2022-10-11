@@ -17,7 +17,7 @@ class LangevinDataset(Dataset):
     def __init__(self, reyupify: bool = False):
         super().__init__(NAME, VERSION, False, reyupify)
 
-    def yupify(self) -> tuple[list[Trajectory], list[Any]]:
+    def yupify(self) -> tuple[List[Trajectory], List[Any]]:
         trajs, labels = [], []
         seed = 0
 

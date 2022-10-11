@@ -3,8 +3,7 @@ This is not intended to be used directly, but as a template for creating new
 datasets.
 """
 
-from pathlib import Path
-from typing import Any
+from typing import Any, List, Tuple
 
 from yupi import Trajectory
 
@@ -29,12 +28,12 @@ class TemplateDataset(Dataset):
         super().__init__(NAME, VERSION, refetch, reyupify)
 
     # 'fetch' is the method you need to override to download the dataset
-    # if needed. The dataset_folder argument is the path to the folder
+    # if needed. The self.raw_dir variable is the path to the folder
     # where the dataset should be stored.
     #
     # If the dataset is generated, this method can be left empty.
     # Use the 'yupify' method instead.
-    def fetch(self, dataset_folder: Path) -> None:
+    def fetch(self) -> None:
         """Downloads the dataset in case needed"""
 
     # 'yupify' is the method you need to override to parse or generate the
@@ -44,6 +43,6 @@ class TemplateDataset(Dataset):
     # The labels can be anything, but they must be the same length as the
     # list of trajectories and the values must be storable in a json file.
     # (e.g., strings or numbers usually)
-    def yupify(self) -> tuple[list[Trajectory], list[Any]]:
+    def yupify(self) -> Tuple[List[Trajectory], List[Any]]:
         """Parses or generates the dataset and convert it to yupi trajectories"""
         raise NotImplementedError

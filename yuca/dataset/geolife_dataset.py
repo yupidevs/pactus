@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -66,7 +65,7 @@ class GeoLifeDataset(Dataset):
             labels = [self._parse_label(line) for line in l_file.readlines()[1:]]
         return labels
 
-    def _process_usr_trajs(self, usr_folder: Path, raw_metadata: list[dict]) -> None:
+    def _process_usr_trajs(self, usr_folder: Path, raw_metadata: List[dict]) -> None:
         """Processes the trajectories of a user."""
         labels_file = usr_folder / "labels.txt"
         if not labels_file.exists():
