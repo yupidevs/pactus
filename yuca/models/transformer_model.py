@@ -51,6 +51,20 @@ class TransformerModel(Model):
         self.metrics = ["accuracy"] if metrics is None else metrics
         self.max_traj_len = max_traj_len
         self.skip_long_trajs = skip_long_trajs
+        self.set_summary(
+            head_size=self.head_size,
+            num_heads=self.num_heads,
+            ff_dim=self.ff_dim,
+            num_transformer_blocks=self.num_transformer_blocks,
+            mlp_units=self.mlp_units,
+            mlp_dropout=self.mlp_dropout,
+            dropout=self.dropout,
+            loss=self.loss,
+            optimizer=self.optimizer,
+            metrics=self.metrics,
+            max_traj_len=self.max_traj_len,
+            skip_long_trajs=self.skip_long_trajs,
+        )
 
     def train(
         self,
@@ -62,6 +76,12 @@ class TransformerModel(Model):
         callbacks: Union[list, None] = None,
         checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
     ):
+        self.set_summary(
+            cross_validation=cross_validation,
+            epochs=epochs,
+            validation_split=validation_split,
+            batch_size=batch_size,
+        )
         x_train, y_train, mask = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
         input_shape = x_train.shape[1:]

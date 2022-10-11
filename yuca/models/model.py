@@ -25,7 +25,7 @@ class Model(ABC):
 
     def __init__(self, name: str):
         self.name = name
-        self.summary = {"name": self.name}
+        self.summary = {"name": name}
         self.trained = False
 
     @abstractmethod
@@ -36,6 +36,10 @@ class Model(ABC):
     @abstractmethod
     def predict(self, data: Data) -> List[Any]:
         """Predict the labels of a given set of trajectories"""
+
+    def set_summary(self, **summary):
+        """Set the summary of the model"""
+        self.summary.update(summary)
 
     def save(self, path: str):
         """Save the model to a given path"""

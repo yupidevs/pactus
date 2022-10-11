@@ -17,11 +17,12 @@ class DecisionTreeModel(Model):
     def __init__(self, featurizer: Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
-        self.kwargs = kwargs
         self.model = DecisionTreeClassifier(**kwargs)
         self.grid: GridSearchCV
+        self.set_summary(**kwargs)
 
     def train(self, data: Data, cross_validation: int = 0):
+        self.set_summary(cross_validation=cross_validation)
         x_data = self.featurizer.compute(data)
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
