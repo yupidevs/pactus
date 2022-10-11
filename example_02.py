@@ -47,7 +47,7 @@ models = [
 use_classes = {"car", "taxi-bus", "walk", "bike", "subway", "train"}
 train, test = (
     # Remove short and pourly time sampled trajectories
-    dataset.filter(lambda traj, _: len(traj) > 30 and traj.dt < 8)
+    dataset.filter(lambda traj, _: len(traj) > 10 and traj.dt < 8)
     # Join "taxi" and "bus" into "taxi-bus"
     .map(lambda _, label: (_, "taxi-bus" if label in ("bus", "taxi") else label))
     # Only use the classes defined in use_classes

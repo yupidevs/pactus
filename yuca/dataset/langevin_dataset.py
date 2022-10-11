@@ -1,5 +1,5 @@
 from random import Random
-from typing import Any
+from typing import Any, List
 
 from yupi import Trajectory
 from yupi.generators import LangevinGenerator

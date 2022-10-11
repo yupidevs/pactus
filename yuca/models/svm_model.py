@@ -6,7 +6,7 @@ from yupi import Trajectory
 
 from yuca.dataset import Data
 from yuca.features.featurizer import Featurizer
-from yuca.models import Model
+from yuca.models.model import Model
 
 NAME = "SVM"
 

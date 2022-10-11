@@ -16,6 +16,7 @@ keywords = ["trajectory", "classification"]
 python = "^3.7"
 numpy = ">=1.16.5"
 sklearn = ">=1.1.1"
+tensorflow = ">=2.9.1"
 yupi = ">=0.11.1"
 
 [tool.poetry.dev-dependencies]
