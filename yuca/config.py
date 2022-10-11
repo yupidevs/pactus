@@ -36,7 +36,7 @@ PROGRESS_BAR_LENGTH = 50
 #
 CACHE_PATH = (
     str(Path(__file__).parent / ".cache")
-    if os.environ["YUCA_CACHE_PATH"] == ""
+    if "YUCA_CACHE_PATH" not in os.environ
     else os.environ["YUCA_CACHE_PATH"]
 )
 DS_BASE_DIR = CACHE_PATH + "/datasets"
