@@ -101,7 +101,7 @@ class Data:
 
         Returns
         -------
-        tuple[Data, Data]
+        Tuple[Data, Data]
             A tuple with the train and test Data objects.
         """
         if isinstance(train_size, int):
@@ -134,7 +134,7 @@ class Data:
 
         Parameters
         ----------
-        func : Callable[[Trajectory, Any], tuple[Trajectory, Any]]
+        func : Callable[[Trajectory, Any], Tuple[Trajectory, Any]]
             Function to be applied to each trajectory and label pair.
 
         Returns
@@ -194,7 +194,7 @@ class Dataset(Data, metaclass=ABCMeta):
         """Downloads the dataset in case needed"""
 
     @abstractmethod
-    def yupify(self) -> tuple[List[Trajectory], List[Any]]:
+    def yupify(self) -> Tuple[List[Trajectory], List[Any]]:
         """Parses or generates the dataset and convert it to yupi trajectories"""
 
     def __len__(self):
@@ -318,7 +318,7 @@ class Dataset(Data, metaclass=ABCMeta):
         with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
             self.yupi_metadata = json.load(md_file)
 
-    def _load(self) -> tuple[List[Trajectory], List[Any]]:
+    def _load(self) -> Tuple[List[Trajectory], List[Any]]:
         self._load_yupify_metadata()
         logging.info("Loading %s dataset", self.name)
 
@@ -334,7 +334,7 @@ class Dataset(Data, metaclass=ABCMeta):
         labels = self.yupi_metadata["labels"]
         return trajs, labels
 
-    def load(self) -> tuple[List[Trajectory], List[Any]]:
+    def load(self) -> Tuple[List[Trajectory], List[Any]]:
         """Loads the dataset"""
 
         self._create_folder()

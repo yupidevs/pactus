@@ -1,5 +1,5 @@
 from random import Random
-from typing import Any, List
+from typing import Any, List, Tuple
 
 from yupi import Trajectory
 from yupi.generators import LangevinGenerator
@@ -17,7 +17,7 @@ class LangevinDataset(Dataset):
     def __init__(self, reyupify: bool = False):
         super().__init__(NAME, VERSION, False, reyupify)
 
-    def yupify(self) -> tuple[List[Trajectory], List[Any]]:
+    def yupify(self) -> Tuple[List[Trajectory], List[Any]]:
         trajs, labels = [], []
         seed = 0
 
