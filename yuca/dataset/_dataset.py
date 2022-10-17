@@ -217,7 +217,7 @@ class Dataset(Data, metaclass=ABCMeta):
             "name": self.name,
             "path": str(_get_path(config.DS_METADATA_FILE, self.name)),
             "version": self.version,
-            "yupify_metadata": None,
+            "yupi_data": None,
         }
         return metadata
 
@@ -246,11 +246,11 @@ class Dataset(Data, metaclass=ABCMeta):
         if self._has_metadata:
             stored_minor = self.metadata["version"].split(".")[1]
             current_minor = self.version.split(".")[1]
-            yupify_matadata_file = self.dir / "yupify_metadata.json"
+            yupi_data_file = self.dir / "yupi_data.json"
             needs_yupify = (
                 needs_yupify
                 or stored_minor != current_minor
-                or not yupify_matadata_file.exists()
+                or not yupi_data_file.exists()
             )
 
         if needs_yupify:
@@ -279,24 +279,18 @@ class Dataset(Data, metaclass=ABCMeta):
         logging.info("Yupifying %s dataset", self.name)
         trajs, labels = self.yupify()
 
-        trajs_paths = []
-        yupi_dir = _get_path(config.DS_YUPI_DIR, self.name)
         ds_dir = _get_path(config.DS_DIR, self.name)
 
-        logging.info("Saving yupified trajectories for %s dataset", self.name)
         for i, traj in enumerate(trajs):
             traj.traj_id = str(i)
-            traj_path = str(yupi_dir / f"traj_{i}.json")
-            JSONSerializer.save(traj, traj_path, overwrite=True)
-            trajs_paths.append(traj_path)
-            print(_get_progress_log(i + 1, len(trajs)), end="\r")
 
-        yupify_metadata = {"trajs_paths": trajs_paths, "labels": labels}
+        json_trajs = [JSONSerializer.to_json(traj) for traj in trajs]
+        yupi_data = {"trajs": json_trajs, "labels": labels}
 
-        logging.info("Saving yupify metadata for %s dataset", self.name)
-        metadata_path = ds_dir / "yupify_metadata.json"
-        self._save_json(metadata_path, yupify_metadata)
-        self.metadata["yupify_metadata"] = str(metadata_path)
+        logging.info("Saving yupify trajectories for %s dataset", self.name)
+        data_path = ds_dir / "yupi_data.json"
+        self._save_json(data_path, yupi_data)
+        self.metadata["yupi_data"] = str(data_path)
 
     def _ensure_cache(self):
         if self._refetch_required():
@@ -311,25 +305,25 @@ class Dataset(Data, metaclass=ABCMeta):
         self.metadata["version"] = self.version
         self._update_metadata()
 
-    def _load_yupify_metadata(self):
-        assert self.metadata["yupify_metadata"] is not None
-        logging.info("Loading yupify metadata for %s dataset", self.name)
-        yupi_metadata_path = self.metadata["yupify_metadata"]
+    def _load_yupi_data(self):
+        assert self.metadata["yupi_data"] is not None
+        logging.info("Loading yupify data for %s dataset", self.name)
+        yupi_metadata_path = self.metadata["yupi_data"]
         with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
             self.yupi_metadata = json.load(md_file)
 
     def _load(self) -> Tuple[List[Trajectory], List[Any]]:
-        self._load_yupify_metadata()
+        self._load_yupi_data()
         logging.info("Loading %s dataset", self.name)
 
-        def _load_traj(traj_path, i, total):
+        def _load_traj(traj, i, total):
             print(_get_progress_log(i, total), end="\r")
-            return JSONSerializer.load(traj_path)
+            return JSONSerializer.from_json(traj)
 
-        total = len(self.yupi_metadata["trajs_paths"])
+        total = len(self.yupi_metadata["trajs"])
         trajs = [
             _load_traj(traj, i + 1, total)
-            for i, traj in enumerate(self.yupi_metadata["trajs_paths"])
+            for i, traj in enumerate(self.yupi_metadata["trajs"])
         ]
         labels = self.yupi_metadata["labels"]
         return trajs, labels
