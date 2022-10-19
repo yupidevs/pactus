@@ -6,6 +6,8 @@ from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset, MnistStrokeDa
 from yuca.features import Featurizer
 from yuca.models import (
     DecisionTreeModel,
+    Evaluation,
+    EvaluationComparison,
     KNeighborsModel,
     Model,
     RandomForestModel,

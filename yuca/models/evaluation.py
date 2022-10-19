@@ -4,7 +4,12 @@ from string import Template
 from typing import Any, List
 
 import numpy as np
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_recall_fscore_support,
+)
 
 from yuca import config
 from yuca.dataset import Data
@@ -23,21 +28,20 @@ LATEX_CM_TEMPLATE = Template(
 \begin{figure}[ht]
 \caption{$caption}
 \vspace{2mm}
-    \begin{center}
-        \begin{tabular}{cc${c_cols}c}
-            \toprule
-            \multicolumn{2}{c}{\multirow{2}[4]{*}{\bf $model_name}} &
-            \multicolumn{$cls_count}{c}{\bf Actual} &
-            \multirow{2}[4]{*}{\bf Precision} \\
-            \multicolumn{2}{c}{} \cline{2-$c_line_top}
-                    & & $cls_head & \\
-            \midrule
-            \multirow{$cls_count}{*}{\bf Predicted}
+\centering
+    \begin{tabular}{cc${c_cols}c}
+        \toprule
+        \multicolumn{2}{c}{\multirow{2}[4]{*}{\bf $model_name}} &
+        \multicolumn{$cls_count}{c}{\bf Actual} &
+        \multirow{2}[4]{*}{\bf Precision} \\
+        \multicolumn{2}{c}{} \cline{2-$c_line_top}
+                & & $cls_head & \\
+        \midrule
+        \multirow{$cls_count}{*}{\bf Predicted}
 $cls_rows            \midrule
-            \multicolumn{2}{c}{\bf Recall} & $recalls \\
-            \bottomrule
-        \end{tabular}
-    \end{center}
+        \multicolumn{2}{c}{\bf Recall} & $recalls \\
+        \bottomrule
+    \end{tabular}
 \end{figure}
 """
 )
@@ -68,6 +72,9 @@ class Evaluation:
         ) = precision_recall_fscore_support(
             self.y_true, self.y_pred, labels=self.classes
         )
+
+        self.acc_overall = accuracy_score(self.y_true, self.y_pred, normalize=True)
+        self.f1_score = f1_score(self.y_true, self.y_pred, average="weighted")
 
     def _conf_matrix_perc(self) -> np.ndarray:
         c_matrix = self._confusion_matrix.astype("float")

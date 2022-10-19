@@ -183,7 +183,7 @@ class Dataset(Data, metaclass=ABCMeta):
         self.refetch = refetch
         self.reyupify = reyupify
         self._metadata = self._load_metadata()
-        self.yupi_metadata: dict
+        self._yupi_data: dict
         self.dir = _get_path(config.DS_DIR, self.name)
         self.raw_dir = _get_path(config.DS_RAW_DIR, self.name)
 
@@ -310,7 +310,7 @@ class Dataset(Data, metaclass=ABCMeta):
         logging.info("Loading yupify data for %s dataset", self.name)
         yupi_metadata_path = self.metadata["yupi_data"]
         with open(yupi_metadata_path, "r", encoding="utf-8") as md_file:
-            self.yupi_metadata = json.load(md_file)
+            self._yupi_data = json.load(md_file)
 
     def _load(self) -> Tuple[List[Trajectory], List[Any]]:
         self._load_yupi_data()
@@ -320,12 +320,12 @@ class Dataset(Data, metaclass=ABCMeta):
             print(_get_progress_log(i, total), end="\r")
             return JSONSerializer.from_json(traj)
 
-        total = len(self.yupi_metadata["trajs"])
+        total = len(self._yupi_data["trajs"])
         trajs = [
             _load_traj(traj, i + 1, total)
-            for i, traj in enumerate(self.yupi_metadata["trajs"])
+            for i, traj in enumerate(self._yupi_data["trajs"])
         ]
-        labels = self.yupi_metadata["labels"]
+        labels = self._yupi_data["labels"]
         return trajs, labels
 
     def load(self) -> Tuple[List[Trajectory], List[Any]]:
