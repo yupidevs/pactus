@@ -34,8 +34,8 @@ LATEX_CM_TEMPLATE = Template(
         \multicolumn{2}{c}{\multirow{2}[4]{*}{\bf $model_name}} &
         \multicolumn{$cls_count}{c}{\bf Actual} &
         \multirow{2}[4]{*}{\bf Precision} \\
-        \multicolumn{2}{c}{} \cline{2-$c_line_top}
-                & & $cls_head & \\
+        & \cline{2-$c_line_top}
+        & & $cls_head & \\
         \midrule
         \multirow{$cls_count}{*}{\bf Predicted}
 $cls_rows            \midrule

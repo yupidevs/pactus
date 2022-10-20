@@ -21,8 +21,8 @@ LATEX_EVAL_TEMPLATE = Template(
 	   \multirow{2}[4]{*}{\textbf{Model}} &
 	   \multirow{2}[4]{*}{\textbf{Metrics}} &
 	   \multicolumn{$ds_count}{c}{\textbf{Datasets}} \\
-       \multicolumn{2}{c}{} \cline{2-$c_line_top}
-		& & $ds_names \\
+       & \cline{2-$c_line_top}
+	   & & $ds_names \\
 	   \midrule
 $rows
 	   \bottomrule
