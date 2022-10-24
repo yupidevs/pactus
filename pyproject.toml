@@ -1,29 +1,33 @@
-[tool.poetry]
+[project]
 name = "pactus"
 version = "0.1.0"
-authors = [
-    "Gustavo Viera-López <gvieralopez@gmail.com>",
-    "Alfredo Reyes <areyes@fisica.uh.cu>",
-    "Jorge Morgado <jorge.morgadov@gmail.com>",
-]
 description = "Framework to evaluate Trajectory Classification Algorithms"
-license = "MIT"
 readme = "README.md"
-repository = "https://github.com/yupidevs/traj-classification"
+authors = [
+    { name = "Jorge Morgado Vega", email = "jorge.morgadov@gmail.com" },
+    { name = "Gustavo Viera-López", email = "gvieralopez@gmail.com" },
+    { name = "Alfredo Reyes", email = "areyes@fisica.uh.cu" },
+]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
 keywords = ["trajectory", "classification"]
+dependencies = [
+    "numpy >= 1.20.0",
+    "yupi >= 0.11.2",
+    "tensorflow >= 2.9.1",
+    "scikit-learn >= 1.1.1",
+]
+requires-python = ">=3.8"
 
-[tool.poetry.dependencies]
-python = "^3.7"
-numpy = ">=1.16.5"
-sklearn = ">=1.1.1"
-tensorflow = ">=2.9.1"
-yupi = ">=0.11.1"
+[project.optional-dependencies]
+dev = ["black", "pylint", "bumpver", "isort", "pytest"]
 
-[tool.poetry.dev-dependencies]
-pytest = ">=6.2.2"
-pylint = ">=2.7.2"
-isort = ">=5.10.1"
-black = ">=22.3.0"
+[project.urls]
+Homepage = "https://github.com/yupidevs/pactus"
 
 [tool.isort]
 profile = "black"
@@ -35,6 +39,23 @@ target-version = ["py37"]
 [tool.pylint."MESSAGES CONTROL"]
 max-line-length = 88
 
+[tool.bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit = false
+tag = false
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"',
+]
+"pactus/__init__.py" = [
+    '__version__ = "{version}"',
+]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
