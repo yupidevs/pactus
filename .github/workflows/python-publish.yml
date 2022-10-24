@@ -1,0 +1,20 @@
+name: Upload Python Package
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.6'
+    - name: Install tools for build and publish
+      run: pip install build twine
+    - name: Build
+      run: python -m build
+    - name: Publish
+      run: twine check dist/*
