@@ -11,8 +11,8 @@ from sklearn.model_selection import train_test_split
 from yupi import Trajectory
 from yupi.core import JSONSerializer
 
-from yuca import config
-from yuca.dataset._utils import _get_path, _get_progress_log
+from pactus import config
+from pactus.dataset._utils import _get_path, _get_progress_log
 
 
 class Data:

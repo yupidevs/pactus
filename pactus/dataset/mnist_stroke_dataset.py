@@ -6,7 +6,7 @@ from typing import List, Tuple
 import numpy as np
 from yupi import Trajectory
 
-from yuca.dataset import Dataset, download_dataset
+from pactus.dataset import Dataset, download_dataset
 
 # Dataset metadata
 NAME = "mnist_stroke"

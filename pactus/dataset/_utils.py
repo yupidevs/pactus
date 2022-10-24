@@ -7,7 +7,7 @@ from pathlib import Path
 import requests
 from requests import Response
 
-import yuca.config as cfg
+import pactus.config as cfg
 
 
 def _get_path(path: str, *args) -> Path:

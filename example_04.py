@@ -1,6 +1,6 @@
 from typing import List
 
-from yuca import (
+from pactus import (
     DecisionTreeModel,
     Evaluation,
     EvaluationComparison,

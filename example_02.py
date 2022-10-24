@@ -1,4 +1,4 @@
-from yuca import (
+from pactus import (
     DecisionTreeModel,
     Featurizer,
     GeoLifeDataset,

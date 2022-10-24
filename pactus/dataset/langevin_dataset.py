@@ -4,7 +4,7 @@ from typing import Any, List, Tuple
 from yupi import Trajectory
 from yupi.generators import LangevinGenerator
 
-from yuca.dataset import Dataset
+from pactus.dataset import Dataset
 
 # Dataset metadata
 NAME = "langevin"

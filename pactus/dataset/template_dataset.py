@@ -7,7 +7,7 @@ from typing import Any, List, Tuple
 
 from yupi import Trajectory
 
-from yuca.dataset import Dataset
+from pactus.dataset import Dataset
 
 # Dataset metadata
 NAME = "template"  # Name of the dataset

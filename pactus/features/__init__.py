@@ -1,4 +1,4 @@
-from yuca.features.features import (
+from pactus.features.features import (
     ACC_AUTO_CC,
     ACC_CHANGE_RATE_AUTO_CC,
     ACC_CHANGE_RATE_COEF_VAR,
@@ -96,4 +96,4 @@ from yuca.features.features import (
     VEL_STD,
     VEL_VAR,
 )
-from yuca.features.featurizer import Featurizer
+from pactus.features.featurizer import Featurizer

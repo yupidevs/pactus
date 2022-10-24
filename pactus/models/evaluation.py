@@ -11,9 +11,9 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from yuca import config
-from yuca.dataset import Data
-from yuca.dataset._utils import _get_path
+from pactus import config
+from pactus.dataset import Data
+from pactus.dataset._utils import _get_path
 
 MAIN_SEP = "="
 SUB_SEP = "-"

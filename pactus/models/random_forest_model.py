@@ -1,30 +1,30 @@
 from typing import Any, List
 
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
 from yupi import Trajectory
 
-from yuca.dataset import Data
-from yuca.features.featurizer import Featurizer
-from yuca.models.model import Model
+from pactus.dataset import Data
+from pactus.features.featurizer import Featurizer
+from pactus.models import Model
 
-NAME = "kneighbors"
+NAME = "random_forest"
 
 
-class KNeighborsModel(Model):
-    """Implementation of a K-Nearst Neighbors Classifier."""
+class RandomForestModel(Model):
+    """Implementation of a Random Forest Classifier."""
 
     def __init__(self, featurizer: Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
-        self.model = KNeighborsClassifier(**kwargs)
+        self.rfc = RandomForestClassifier(**kwargs)
         self.grid: GridSearchCV
         self.set_summary(**kwargs)
 
     def train(self, data: Data, cross_validation: int = 0):
         self.set_summary(cross_validation=cross_validation)
         x_data = self.featurizer.compute(data)
-        self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
+        self.grid = GridSearchCV(self.rfc, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
 
     def predict(self, data: Data) -> List[Any]:

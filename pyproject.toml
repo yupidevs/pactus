@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yuca"
+name = "pactus"
 version = "0.1.0"
 authors = [
     "Gustavo Viera-López <gvieralopez@gmail.com>",
@@ -27,7 +27,7 @@ black = ">=22.3.0"
 
 [tool.isort]
 profile = "black"
-known_first_party = ["yuca"]
+known_first_party = ["pactus"]
 
 [tool.black]
 target-version = ["py37"]

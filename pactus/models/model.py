@@ -4,8 +4,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, List
 
-from yuca.dataset import Data
-from yuca.models.evaluation import Evaluation
+from pactus.dataset import Data
+from pactus.models.evaluation import Evaluation
 
 
 def _mark_trained(func):

@@ -2,9 +2,9 @@ import logging
 
 from yupi import DiffMethod, Trajectory, WindowType
 
-from yuca.dataset import Dataset, GeoLifeDataset, LangevinDataset, MnistStrokeDataset
-from yuca.features import Featurizer
-from yuca.models import (
+from pactus.dataset import Dataset, GeoLifeDataset, LangevinDataset, MnistStrokeDataset
+from pactus.features import Featurizer
+from pactus.models import (
     DecisionTreeModel,
     Evaluation,
     EvaluationComparison,

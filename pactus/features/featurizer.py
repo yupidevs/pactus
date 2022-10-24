@@ -4,10 +4,10 @@ from pathlib import Path
 import numpy as np
 from yupi import Trajectory
 
-from yuca import config
-from yuca.dataset import Data
-from yuca.dataset._utils import _get_path
-from yuca.features.features import get_feat_vector
+from pactus import config
+from pactus.dataset import Data
+from pactus.dataset._utils import _get_path
+from pactus.features.features import get_feat_vector
 
 FeatureMask = int
 

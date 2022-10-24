@@ -6,8 +6,8 @@ from typing import List, NamedTuple, Tuple
 import numpy as np
 from yupi import Trajectory
 
-from yuca.dataset import Dataset, download_dataset
-from yuca.dataset._utils import _get_progress_log
+from pactus.dataset import Dataset, download_dataset
+from pactus.dataset._utils import _get_progress_log
 
 # Dataset metadata
 NAME = "geolife"

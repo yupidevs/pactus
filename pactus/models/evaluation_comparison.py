@@ -1,7 +1,7 @@
 from string import Template
 from typing import Any, Dict, List
 
-from yuca.models.evaluation import Evaluation
+from pactus.models.evaluation import Evaluation
 
 LATEX_EVAL_ROW_TEMPLATE = Template(
     r"""	   \multirow{2}{*}{$model_name}

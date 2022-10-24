@@ -1,4 +1,4 @@
-from yuca import Featurizer, LangevinDataset, RandomForestModel, features
+from pactus import Featurizer, LangevinDataset, RandomForestModel, features
 
 SEED = 0  # Random seed for reproducibility
 

@@ -1,7 +1,7 @@
 from tensorflow import keras
 
-from yuca import MnistStrokeDataset
-from yuca.models import TransformerModel
+from pactus import MnistStrokeDataset
+from pactus.models import TransformerModel
 
 SEED = 0  # Random seed for reproducibility
 

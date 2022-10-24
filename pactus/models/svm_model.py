@@ -1,23 +1,23 @@
 from typing import Any, List
 
 from sklearn.model_selection import GridSearchCV
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 from yupi import Trajectory
 
-from yuca.dataset import Data
-from yuca.features.featurizer import Featurizer
-from yuca.models.model import Model
+from pactus.dataset import Data
+from pactus.features.featurizer import Featurizer
+from pactus.models.model import Model
 
-NAME = "decision_tree"
+NAME = "SVM"
 
 
-class DecisionTreeModel(Model):
-    """Implementation of a Decision Tree Classifier."""
+class SVMModel(Model):
+    """Implementation of a Support Vector Machine Classifier."""
 
     def __init__(self, featurizer: Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
-        self.model = DecisionTreeClassifier(**kwargs)
+        self.model = SVC(**kwargs)
         self.grid: GridSearchCV
         self.set_summary(**kwargs)
 

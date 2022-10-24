@@ -8,9 +8,9 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-from yuca.dataset import Data
-from yuca.models import Model
-from yuca.models.transformer import build_model
+from pactus.dataset import Data
+from pactus.models import Model
+from pactus.models.transformer import build_model
 
 NAME = "transformer_model"
 DEFAULT_OPTIMIZER = keras.optimizers.Adam(learning_rate=1e-2)
