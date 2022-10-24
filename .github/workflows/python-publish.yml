@@ -1,6 +1,8 @@
 name: Upload Python Package
 
-on: workflow_dispatch
+on:
+  release:
+    types: [created]
 
 jobs:
   deploy:
@@ -17,4 +19,4 @@ jobs:
     - name: Build
       run: python -m build
     - name: Publish
-      run: twine check dist/*
+      run: twine upload dist/* -u "__token__" -p "${{ secrets.PYPI_RELEASE_TOKEN }}"
