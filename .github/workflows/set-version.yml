@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.8.6'
     - name: Install bumpver
@@ -23,7 +23,6 @@ jobs:
     - uses: EndBug/add-and-commit@v9
       with:
         default_author: user_info
-        fetch: false
         message: 'Set version v${{ github.event.inputs.version }}'
         pathspec_error_handling: exitImmediately
         push: true
