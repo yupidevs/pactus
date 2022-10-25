@@ -41,7 +41,7 @@ max-line-length = 88
 
 [tool.bumpver]
 current_version = "0.1.0"
-version_pattern = "MAJOR.MINOR.PATCH"
+version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit = false
 tag = false
 push = false
