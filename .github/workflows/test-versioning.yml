@@ -1,0 +1,22 @@
+name: Test versioning
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.6'
+    - name: Install bumpver
+      run: pip install bumpver
+    - name: Check dry versioning with bumpver
+      run: bumpver update -dn --set-version "${{ github.event.inputs.version }}"
