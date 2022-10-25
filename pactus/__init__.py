@@ -15,7 +15,7 @@ from pactus.models import (
     TransformerModel,
 )
 
-__version__ = "0.1.1a0"
+__version__ = "0.1.1a1"
 
 Trajectory.global_diff_method(
     method=DiffMethod.LINEAR_DIFF, window_type=WindowType.FORWARD
