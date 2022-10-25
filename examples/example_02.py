@@ -2,9 +2,7 @@ from pactus import (
     DecisionTreeModel,
     Featurizer,
     GeoLifeDataset,
-    KNeighborsModel,
     RandomForestModel,
-    SVMModel,
     features,
 )
 
@@ -27,7 +25,6 @@ model = RandomForestModel(
     n_jobs=6,
 )
 
-
 # Preprocess the dataset and split it into train and test sets
 use_classes = {"car", "taxi-bus", "walk", "bike", "subway", "train"}
 train, test = (
@@ -41,11 +38,11 @@ train, test = (
     .split(train_size=0.7, random_state=SEED)
 )
 
-
 # Train the model
 model.train(data=train, cross_validation=5)
 
 # Evaluate the model on a test dataset
 evaluation = model.evaluate(test)
 
+# Show the evaluation results
 evaluation.show()
