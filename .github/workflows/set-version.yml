@@ -1,4 +1,4 @@
-name: Set version
+name: Set version and release
 
 on:
   workflow_dispatch:
@@ -29,3 +29,13 @@ jobs:
         push: true
         tag: 'v${{ github.event.inputs.version }}'
         tag_push: '--force'
+    - uses: ncipollo/release-action@v1
+      with:
+        tag: "v${{ github.event.inputs.version }}"
+        name: "pactus v${{ github.event.inputs.version }}"
+    - name: Install tools for build and publish
+      run: pip install build twine
+    - name: Build
+      run: python -m build
+    - name: Publish
+      run: twine upload dist/* -u "__token__" -p "${{ secrets.PYPI_RELEASE_TOKEN }}"
