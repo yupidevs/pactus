@@ -1,36 +1,59 @@
-from tensorflow import keras
+from typing import List
 
-from pactus import MnistStrokeDataset
-from pactus.models import TransformerModel
+from pactus import (
+    DecisionTreeModel,
+    Evaluation,
+    EvaluationComparison,
+    Featurizer,
+    KNeighborsModel,
+    RandomForestModel,
+    Dataset,
+    features,
+)
 
 SEED = 0  # Random seed for reproducibility
 
+evaluations: List[Evaluation] = []
+
 # Load Dataset
-dataset = MnistStrokeDataset()
+datasets = [Dataset.mnist_stroke(), Dataset.geolife()]
 
-# Define the transformer model
-model = TransformerModel(
-    head_size=512,
-    num_heads=4,
-    num_transformer_blocks=4,
-    optimizer=keras.optimizers.Adam(learning_rate=1e-4),
-)
+# Select the desired features to be extracted from the trajectories
+featurizer = Featurizer(selected=features.ALL)
 
-# Split into train and test sets
-train, test = dataset.cut(60_000)
+# Defining the model
+for dataset in datasets:
+    models = [
+        KNeighborsModel(
+            featurizer=featurizer,
+            n_neighbors=7,
+        ),
+        DecisionTreeModel(
+            featurizer=featurizer,
+            max_depth=7,
+        ),
+        RandomForestModel(
+            featurizer=featurizer,
+            max_features=16,
+            n_estimators=200,
+            bootstrap=False,
+            random_state=SEED,
+            warm_start=True,
+            n_jobs=6,
+        ),
+    ]
 
-# Train the model
-checkpoint = keras.callbacks.ModelCheckpoint(
-    "partialy_trained_model_mnist_stroke.h5",
-    monitor="loss",
-    verbose=1,
-    save_best_only=True,
-    mode="min",
-)
-model.train(train, epochs=150, batch_size=64, checkpoint=checkpoint)
+    # Spliting dataset
+    train, test = dataset.split(0.8, random_state=SEED)
 
-# Evaluate the model on a test dataset
-evaluation = model.evaluate(test)
+    for model in models:
+        # Train the model
+        model.train(data=train, cross_validation=5)
 
-# Print the evaluation
-evaluation.show()
+        # Evaluate the model on a test dataset
+        evaluation = model.evaluate(test)
+
+        evaluations.append(evaluation)
+
+comparison = EvaluationComparison(evaluations)
+print(comparison.to_latex())

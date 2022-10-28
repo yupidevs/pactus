@@ -14,29 +14,14 @@ PROGRESS_BAR_LENGTH = 50
 # Dataset configs
 # -----------------------------------------------------------------------------
 #
-# Dataset version: (doens't need to match the project version)
-#   [major].[minor].[patch]
-#      │       │       └── Change when minors changes are made in the code
-#      │       │           related to the datasets. (no need for redownload
-#      │       │           or regeneration of yupi trajectories)
-#      │       │
-#      │       └── Change when the yupi data changes (needs to be regenerated)
-#      │
-#      └── Change when the original dataset changes (needs redownload)
-#
-# Dataset structure: (mainly for downloadable datasets)
+# Dataset structure:
 #  src
 #  └── datasets
 #      └── [dataset_name]
-#          ├── raw_data
-#          │   └── [unzipped dataset files]
-#          ├── metadata.json
-#          └── yupi_metadata.json
+#          └── data
 #
-CACHE_PATH = os.environ.get("YUCA_CACHE_PATH", str(Path(__file__).parent / ".cache"))
+CACHE_PATH = os.environ.get("PACTUS_CACHE_PATH", str(Path(__file__).parent / ".cache"))
 DS_BASE_DIR = CACHE_PATH + "/datasets"
 DS_DIR = DS_BASE_DIR + "/{0}"
-DS_METADATA_FILE = DS_DIR + "/metadata.json"
-DS_RAW_DIR = DS_DIR + "/raw_data"
 DS_FEATS_DIR = DS_DIR + "/features"
 DS_EVALS_DIR = DS_DIR + "/evaluations"

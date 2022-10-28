@@ -29,7 +29,7 @@ def _get_progress_log(part, total):
 
 def _create_dataset_path(dataset_name: str) -> Path:
     logging.info("Creating dataset folder for %s", dataset_name)
-    dataset_path = _get_path(cfg.DS_RAW_DIR, dataset_name)
+    dataset_path = _get_path(cfg.DS_DIR, dataset_name)
     dataset_path.mkdir(parents=True, exist_ok=True)
     return dataset_path
 
