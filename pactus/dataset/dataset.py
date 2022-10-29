@@ -212,10 +212,11 @@ class Dataset(Data):
             assert "trajs" in data, "trajs not found in dataset"
             assert "labels" in data, "labels not found in dataset"
             assert "version" in data, "version not found in dataset"
+            trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
             return Dataset(
                 name=name,
                 version=data["version"],
-                trajs=data["trajs"],
+                trajs=trajs,
                 labels=data["labels"],
             )
 
