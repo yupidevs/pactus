@@ -197,10 +197,31 @@ class Dataset(Data):
         return len(self.trajs)
 
     @staticmethod
-    def _from_url(url: str, name: str) -> Dataset:
-        download_dataset(url, name)
+    def _from_json(name: str, data: dict) -> Dataset:
+        assert "trajs" in data, "trajs not found in dataset"
+        assert "labels" in data, "labels not found in dataset"
+        assert "version" in data, "version not found in dataset"
+        trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
+        return Dataset(
+            name=name,
+            version=data["version"],
+            trajs=trajs,
+            labels=data["labels"],
+        )
+
+    @staticmethod
+    def _from_url(url: str, name: str, force: bool = False) -> Dataset:
         raw_dir = _get_path(config.DS_DIR, name)
         yupi_data_file = raw_dir / f"{name}.json"
+
+        if not force and yupi_data_file.exists():
+            with open(yupi_data_file, "r", encoding="utf-8") as yupi_fd:
+                data = json.load(yupi_fd)
+                if "trajs" in data and "labels" in data and "version" in data:
+                    return Dataset._from_json(name, data)
+            logging.warning("Invalid dataset file, downloading again")
+
+        download_dataset(url, name)
         return Dataset.from_file(yupi_data_file, name)
 
     @staticmethod
@@ -209,23 +230,14 @@ class Dataset(Data):
         _path = path if isinstance(path, Path) else Path(path)
         with open(_path, "r", encoding="utf-8") as yupi_fd:
             data = json.load(yupi_fd)
-            assert "trajs" in data, "trajs not found in dataset"
-            assert "labels" in data, "labels not found in dataset"
-            assert "version" in data, "version not found in dataset"
-            trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
-            return Dataset(
-                name=name,
-                version=data["version"],
-                trajs=trajs,
-                labels=data["labels"],
-            )
+            return Dataset._from_json(name, data)
 
     @staticmethod
-    def geolife() -> Dataset:
+    def geolife(redownload: bool = False) -> Dataset:
         """Loads the geolife dataset"""
-        return Dataset._from_url(GEOLIFE_URL, "geolife")
+        return Dataset._from_url(GEOLIFE_URL, "geolife", force=redownload)
 
     @staticmethod
-    def mnist_stroke() -> Dataset:
+    def mnist_stroke(redownload: bool = False) -> Dataset:
         """Loads the mnist_stroke dataset"""
-        return Dataset._from_url(MNIST_STROKE_URL, "mnist_stroke")
+        return Dataset._from_url(MNIST_STROKE_URL, "mnist_stroke", force=redownload)
