@@ -1,13 +1,13 @@
 from typing import List
 
 from pactus import (
+    Dataset,
     DecisionTreeModel,
     Evaluation,
     EvaluationComparison,
     Featurizer,
     KNeighborsModel,
     RandomForestModel,
-    Dataset,
     features,
 )
 

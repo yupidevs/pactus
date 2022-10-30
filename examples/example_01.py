@@ -1,10 +1,4 @@
-from pactus import (
-    DecisionTreeModel,
-    Featurizer,
-    Dataset,
-    RandomForestModel,
-    features,
-)
+from pactus import Dataset, DecisionTreeModel, Featurizer, RandomForestModel, features
 
 SEED = 0  # Random seed for reproducibility
 
