@@ -25,3 +25,8 @@ DS_BASE_DIR = CACHE_PATH + "/datasets"
 DS_DIR = DS_BASE_DIR + "/{0}"
 DS_FEATS_DIR = DS_DIR + "/features"
 DS_EVALS_DIR = DS_DIR + "/evaluations"
+
+# -----------------------------------------------------------------------------
+# Model configs
+# -----------------------------------------------------------------------------
+MASK_VALUE = -10_000

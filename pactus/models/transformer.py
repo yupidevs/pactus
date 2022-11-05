@@ -1,27 +1,38 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.python.ops.array_ops import Transpose
 
 
-def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0.0, mask=None):
-    if mask is not None:
-        mask = mask[:, tf.newaxis, tf.newaxis, :]
+class TransformerBlock(layers.Layer):
+    def __init__(self, head_size, num_heads, ff_dim, ff_dim2, rate=0.1):
+        super().__init__()
+        self.att = layers.MultiHeadAttention(num_heads=num_heads, key_dim=head_size)
+        self.layernorm1 = layers.LayerNormalization(epsilon=1e-6)
+        self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
+        self.dropout1 = layers.Dropout(rate)
+        self.dropout2 = layers.Dropout(rate)
+        self.conv1 = layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")
+        self.conv2 = layers.Conv1D(filters=ff_dim2, kernel_size=1)
+        self.supports_masking = True
 
-    # Normalization and Attention
-    x = layers.LayerNormalization(epsilon=1e-6)(inputs)
-    x = layers.MultiHeadAttention(
-        key_dim=head_size, num_heads=num_heads, dropout=dropout
-    )(x, x, attention_mask=mask)
-    x = layers.Dropout(dropout)(x)
-    res = x + inputs
+    def call(self, inputs, training, mask=None):
+        padding_mask = None
+        if mask is not None:
+            padding_mask = tf.cast(mask[:, tf.newaxis, tf.newaxis, :], dtype="int32")
 
-    # Feed Forward Part
-    x = layers.LayerNormalization(epsilon=1e-6)(res)
-    x = layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(x)
-    x = layers.Dropout(dropout)(x)
-    x = layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
-    return x + res
-
+        out_norm1 = self.layernorm1(inputs, training=training)
+        out_att = self.att(
+            out_norm1, out_norm1, training=training, attention_mask=padding_mask
+        )
+        out_drop1 = self.dropout1(out_att, training=training)
+        res = out_drop1 + inputs
+        out_norm2 = self.layernorm2(res, training=training)
+        out_conv1 = self.conv1(out_norm2, training=training)
+        out_drop2 = self.dropout2(out_conv1, training=training)
+        out_conv2 = self.conv2(out_drop2, training=training)
+        return out_conv2 + res
 
 def build_model(
     n_classes,
@@ -33,16 +44,24 @@ def build_model(
     mlp_units,
     dropout=0.0,
     mlp_dropout=0.0,
-    input_mask=None,
+    mask=None,
 ) -> keras.Model:
     inputs = keras.Input(shape=input_shape)
-    x = inputs
+    _x = inputs
+    if mask is not None:
+        _x = layers.Masking(mask_value=mask)(_x)
     for _ in range(num_transformer_blocks):
-        x = transformer_encoder(x, head_size, num_heads, ff_dim, dropout, input_mask)
+        _x = TransformerBlock(
+            head_size,
+            num_heads,
+            ff_dim,
+            inputs.shape[-1],
+            dropout,
+        )(_x)
 
-    x = layers.GlobalAveragePooling2D(data_format="channels_first")(x)
+    _x = layers.GlobalAveragePooling2D(data_format="channels_first")(_x)
     for dim in mlp_units:
-        x = layers.Dense(dim, activation="relu")(x)
-        x = layers.Dropout(mlp_dropout)(x)
-    outputs = layers.Dense(n_classes, activation="softmax")(x)
+        _x = layers.Dense(dim, activation="relu")(_x)
+        _x = layers.Dropout(mlp_dropout)(_x)
+    outputs = layers.Dense(n_classes, activation="softmax")(_x)
     return keras.Model(inputs, outputs)

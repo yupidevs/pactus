@@ -3,11 +3,13 @@ from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import numpy as np
+import tensorflow as tf
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 from tensorflow.keras.callbacks import ModelCheckpoint
 
+import pactus.config as cfg
 from pactus.dataset import Data
 from pactus.models import Model
 from pactus.models.transformer import build_model
@@ -36,6 +38,7 @@ class TransformerModel(Model):
         metrics=None,
         max_traj_len: int = -1,
         skip_long_trajs: bool = False,
+        mask_value=cfg.MASK_VALUE,
     ):
         super().__init__(NAME)
         self.head_size = head_size
@@ -51,6 +54,7 @@ class TransformerModel(Model):
         self.metrics = ["accuracy"] if metrics is None else metrics
         self.max_traj_len = max_traj_len
         self.skip_long_trajs = skip_long_trajs
+        self.mask_value = mask_value
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -82,7 +86,7 @@ class TransformerModel(Model):
             validation_split=validation_split,
             batch_size=batch_size,
         )
-        x_train, y_train, mask = self._get_input_data(data)
+        x_train, y_train = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
         input_shape = x_train.shape[1:]
         callbacks = DEFAULT_CALLBACKS if callbacks is None else callbacks
@@ -95,7 +99,11 @@ class TransformerModel(Model):
 
         if cross_validation == 0:
             model = (
-                self._get_model(n_classes, input_shape, mask)
+                self._get_model(
+                    n_classes,
+                    input_shape,
+                    mask=self.mask_value,
+                )
                 if model_path is None
                 else keras.models.load_model(model_path)
             )
@@ -117,7 +125,11 @@ class TransformerModel(Model):
             for train_idxs, test_idxs in kfold.split(x_train, y_train):
                 x_train_fold = x_train[train_idxs]
                 y_train_fold = y_train[train_idxs]
-                model = self._get_model(n_classes, input_shape, mask)
+                model = self._get_model(
+                    n_classes,
+                    input_shape,
+                    mask=self.mask_value,
+                )
                 model.fit(
                     x_train_fold,
                     y_train_fold,
@@ -140,16 +152,15 @@ class TransformerModel(Model):
                 fold_no += 1
 
     def predict(self, data: Data) -> List[Any]:
-        x_data, _, _ = self._get_input_data(data)
+        x_data, _ = self._get_input_data(data)
         return self.model.predict(x_data)
 
     def _get_model(
-        self, n_classes: int, input_shape: tuple, mask: Union[np.ndarray, None] = None
+        self, n_classes: int, input_shape: tuple, mask: Any = None
     ) -> keras.Model:
         model = build_model(
             n_classes,
             input_shape,
-            input_mask=mask,
             head_size=self.head_size,
             num_heads=self.num_heads,
             ff_dim=self.ff_dim,
@@ -157,6 +168,7 @@ class TransformerModel(Model):
             mlp_units=self.mlp_units,
             mlp_dropout=self.mlp_dropout,
             dropout=self.dropout,
+            mask=mask,
         )
         model.compile(
             loss=self.loss,
@@ -165,9 +177,7 @@ class TransformerModel(Model):
         )
         return model
 
-    def _get_input_data(
-        self, data: Data
-    ) -> Tuple[np.ndarray, np.ndarray, Union[np.ndarray, None]]:
+    def _get_input_data(self, data: Data) -> Tuple[np.ndarray, np.ndarray]:
         """
         Process all the data and returns a x_data, y_data, mask readable
         by the transformer
@@ -175,11 +185,7 @@ class TransformerModel(Model):
         y_data = self._encode_labels(data)
         x_data = self._extract_raw_data(data)
         x_data = self._reshape_input(x_data)
-        # mask = self._mask_data(x_data)
-        return x_data, y_data, None
-
-    def _mask_data(self, x_data: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
+        return x_data, y_data
 
     def _encode_labels(self, data: Data) -> np.ndarray:
         """Encode the labels"""
@@ -206,7 +212,7 @@ class TransformerModel(Model):
         all_raw_data = np.zeros((len(raw_data), max_len, 3))
         for i, traj in enumerate(raw_data):
             traj = traj[:max_len]
-            all_raw_data[i, :, :] = 0  # TODO: check for masking
+            all_raw_data[i, :, :] = self.mask_value
             all_raw_data[i, : traj.shape[0]] = traj
         return all_raw_data
 
