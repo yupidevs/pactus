@@ -13,15 +13,12 @@ from yupi.core import JSONSerializer
 from pactus import config
 from pactus.dataset._utils import _get_path, download_dataset
 
-GEOLIFE_URL = (
-    "https://github.com/yupidevs/trajectory-datasets/releases/"
-    "download/v0.1.0a0/geolife.zip"
-)
+RELEASE_VERSION = "v0.1.0a3"
+RELEASE_URL = "https://github.com/yupidevs/trajectory-datasets/releases/download/"
 
-MNIST_STROKE_URL = (
-    "https://github.com/yupidevs/trajectory-datasets/releases/"
-    "download/v0.1.0a0/mnist_stroke.zip"
-)
+
+def _get_dataset_url(name: str) -> str:
+    return f"{RELEASE_URL}{RELEASE_VERSION}/{name}.zip"
 
 
 class Data:
@@ -210,7 +207,8 @@ class Dataset(Data):
         )
 
     @staticmethod
-    def _from_url(url: str, name: str, force: bool = False) -> Dataset:
+    def _from_url(name: str, force: bool = False) -> Dataset:
+        url = _get_dataset_url(name)
         raw_dir = _get_path(config.DS_DIR, name)
         yupi_data_file = raw_dir / f"{name}.json"
 
@@ -235,9 +233,29 @@ class Dataset(Data):
     @staticmethod
     def geolife(redownload: bool = False) -> Dataset:
         """Loads the geolife dataset"""
-        return Dataset._from_url(GEOLIFE_URL, "geolife", force=redownload)
+        return Dataset._from_url("geolife", force=redownload)
 
     @staticmethod
     def mnist_stroke(redownload: bool = False) -> Dataset:
         """Loads the mnist_stroke dataset"""
-        return Dataset._from_url(MNIST_STROKE_URL, "mnist_stroke", force=redownload)
+        return Dataset._from_url("mnist_stroke", force=redownload)
+
+    @staticmethod
+    def uci_gotrack(redownload: bool = False) -> Dataset:
+        """Loads the uci_gotrack dataset"""
+        return Dataset._from_url("uci_gotrack", force=redownload)
+
+    @staticmethod
+    def uci_movement_libras(redownload: bool = False) -> Dataset:
+        """Loads the uci_movement_libras dataset"""
+        return Dataset._from_url("uci_movement_libras", force=redownload)
+
+    @staticmethod
+    def uci_pen_digits(redownload: bool = False) -> Dataset:
+        """Loads the uci_pen_digits dataset"""
+        return Dataset._from_url("uci_pen_digits", force=redownload)
+
+    @staticmethod
+    def uci_characters(redownload: bool = False) -> Dataset:
+        """Loads the uci_characters dataset"""
+        return Dataset._from_url("uci_characters", force=redownload)
