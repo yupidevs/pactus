@@ -6,6 +6,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Callable, List, Tuple, Union
 
+from git.cmd import Git
 from sklearn.model_selection import train_test_split
 from yupi import Trajectory
 from yupi.core import JSONSerializer
@@ -13,12 +14,7 @@ from yupi.core import JSONSerializer
 from pactus import config
 from pactus.dataset._utils import _get_path, download_dataset
 
-RELEASE_VERSION = "v0.1.0a3"
-RELEASE_URL = "https://github.com/yupidevs/trajectory-datasets/releases/download/"
-
-
-def _get_dataset_url(name: str) -> str:
-    return f"{RELEASE_URL}{RELEASE_VERSION}/{name}.zip"
+REPO_URL = "https://github.com/yupidevs/trajectory-datasets"
 
 
 class Data:
@@ -181,6 +177,8 @@ class Data:
 class Dataset(Data):
     """Wraps the data with some general properties that describes a full dataset"""
 
+    _last_tag = None
+
     def __init__(
         self, name: str, version: str, trajs: List[Trajectory], labels: List[Any]
     ):
@@ -207,8 +205,19 @@ class Dataset(Data):
         )
 
     @staticmethod
+    def _get_dataset_url(name: str) -> str:
+        tag = Dataset._last_tag
+        if tag is None:
+            g_cmd = Git()
+            output = g_cmd.ls_remote(REPO_URL, sort="-v:refname", tags=True)
+            tag = output.split("\n")[0].split("/")[-1]
+            Dataset._last_tag = tag
+        assert tag is not None, "Could not find the last tag"
+        return f"{REPO_URL}/releases/download/{tag}/{name}.zip"
+
+    @staticmethod
     def _from_url(name: str, force: bool = False) -> Dataset:
-        url = _get_dataset_url(name)
+        url = Dataset._get_dataset_url(name)
         raw_dir = _get_path(config.DS_DIR, name)
         yupi_data_file = raw_dir / f"{name}.json"
 
