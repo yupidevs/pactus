@@ -245,9 +245,24 @@ class Dataset(Data):
         return Dataset._from_url("geolife", force=redownload)
 
     @staticmethod
+    def animals(redownload: bool = False) -> Dataset:
+        """Loads the animals dataset"""
+        return Dataset._from_url("animals", force=redownload)
+
+    @staticmethod
     def mnist_stroke(redownload: bool = False) -> Dataset:
         """Loads the mnist_stroke dataset"""
         return Dataset._from_url("mnist_stroke", force=redownload)
+
+    @staticmethod
+    def burdat2(redownload: bool = False) -> Dataset:
+        """Loads the hurdat2 dataset"""
+        return Dataset._from_url("hurdat2", force=redownload)
+
+    @staticmethod
+    def cma_bst(redownload: bool = False) -> Dataset:
+        """Loads the cma_bst dataset"""
+        return Dataset._from_url("cma_bst", force=redownload)
 
     @staticmethod
     def uci_gotrack(redownload: bool = False) -> Dataset:
@@ -268,3 +283,8 @@ class Dataset(Data):
     def uci_characters(redownload: bool = False) -> Dataset:
         """Loads the uci_characters dataset"""
         return Dataset._from_url("uci_characters", force=redownload)
+
+    @staticmethod
+    def stochastic_models(redownload: bool = False) -> Dataset:
+        """Loads the stochastic models dataset"""
+        return Dataset._from_url("stochastic_models", force=redownload)
