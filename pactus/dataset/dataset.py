@@ -180,7 +180,11 @@ class Dataset(Data):
     _last_tag = None
 
     def __init__(
-        self, name: str, version: str, trajs: List[Trajectory], labels: List[Any]
+        self,
+        name: str,
+        trajs: List[Trajectory],
+        labels: List[Any],
+        version: int = 0,
     ):
         self.name = name
         self.version = version
@@ -199,9 +203,9 @@ class Dataset(Data):
         trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
         return Dataset(
             name=name,
-            version=data["version"],
             trajs=trajs,
             labels=data["labels"],
+            version=data["version"],
         )
 
     @staticmethod
