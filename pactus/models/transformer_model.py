@@ -6,7 +6,6 @@ import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
-from tensorflow.keras.callbacks import ModelCheckpoint
 
 import pactus.config as cfg
 from pactus.dataset import Data

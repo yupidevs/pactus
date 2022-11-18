@@ -1,4 +1,5 @@
-from pactus import Dataset, DecisionTreeModel, Featurizer, RandomForestModel, features
+from pactus import Dataset, featurizers
+from pactus.models import RandomForestModel
 
 SEED = 0  # Random seed for reproducibility
 
@@ -6,7 +7,7 @@ SEED = 0  # Random seed for reproducibility
 dataset = Dataset.geolife()
 
 # Select the desired features to be extracted from the trajectories
-featurizer = Featurizer(selected=features.ALL)
+featurizer = featurizers.UniversalFeaturizer()
 
 # Defining the models
 model = RandomForestModel(

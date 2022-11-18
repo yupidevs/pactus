@@ -6,3 +6,14 @@ from pactus.models.model import Model
 from pactus.models.random_forest_model import RandomForestModel
 from pactus.models.svm_model import SVMModel
 from pactus.models.transformer_model import TransformerModel
+
+__all__ = [
+    "DecisionTreeModel",
+    "Evaluation",
+    "EvaluationComparison",
+    "KNeighborsModel",
+    "Model",
+    "RandomForestModel",
+    "SVMModel",
+    "TransformerModel",
+]

@@ -1,6 +1,7 @@
 from tensorflow import keras
 
-from pactus import Dataset, TransformerModel
+from pactus import Dataset
+from pactus.models import TransformerModel
 
 SEED = 0  # Random seed for reproducibility
 
