@@ -4,8 +4,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from yupi import Trajectory
 
+from pactus import featurizers
 from pactus.dataset import Data
-from pactus.featurizers import Featurizer
 from pactus.models.model import Model
 
 NAME = "kneighbors"
@@ -14,7 +14,7 @@ NAME = "kneighbors"
 class KNeighborsModel(Model):
     """Implementation of a K-Nearst Neighbors Classifier."""
 
-    def __init__(self, featurizer: Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = KNeighborsClassifier(**kwargs)

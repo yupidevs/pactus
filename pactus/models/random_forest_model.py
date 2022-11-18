@@ -4,8 +4,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from yupi import Trajectory
 
+from pactus import featurizers
 from pactus.dataset import Data
-from pactus.featurizers import Featurizer
 from pactus.models import Model
 
 NAME = "random_forest"
@@ -14,7 +14,7 @@ NAME = "random_forest"
 class RandomForestModel(Model):
     """Implementation of a Random Forest Classifier."""
 
-    def __init__(self, featurizer: Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
         self.rfc = RandomForestClassifier(**kwargs)

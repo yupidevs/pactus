@@ -4,8 +4,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
 from yupi import Trajectory
 
+from pactus import featurizers
 from pactus.dataset import Data
-from pactus.featurizers import Featurizer
 from pactus.models.model import Model
 
 NAME = "decision_tree"
@@ -14,7 +14,7 @@ NAME = "decision_tree"
 class DecisionTreeModel(Model):
     """Implementation of a Decision Tree Classifier."""
 
-    def __init__(self, featurizer: Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = DecisionTreeClassifier(**kwargs)

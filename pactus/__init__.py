@@ -1,6 +1,7 @@
 import logging
 
 from yupi import DiffMethod, Trajectory, WindowType
+from yupi.core import featurizers
 
 from pactus.dataset import Dataset
 from pactus.models import Evaluation, EvaluationComparison
@@ -11,6 +12,7 @@ __all__ = [
     "Dataset",
     "Evaluation",
     "EvaluationComparison",
+    "featurizers",
 ]
 
 Trajectory.global_diff_method(

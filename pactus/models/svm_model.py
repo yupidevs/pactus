@@ -4,8 +4,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from yupi import Trajectory
 
+from pactus import featurizers
 from pactus.dataset import Data
-from pactus.featurizers import Featurizer
 from pactus.models.model import Model
 
 NAME = "SVM"
@@ -14,7 +14,7 @@ NAME = "SVM"
 class SVMModel(Model):
     """Implementation of a Support Vector Machine Classifier."""
 
-    def __init__(self, featurizer: Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = SVC(**kwargs)
