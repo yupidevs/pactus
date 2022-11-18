@@ -5,7 +5,7 @@ from sklearn.model_selection import GridSearchCV
 from yupi import Trajectory
 
 from pactus.dataset import Data
-from pactus.features.featurizer import Featurizer
+from pactus.featurizers import Featurizer
 from pactus.models import Model
 
 NAME = "random_forest"
@@ -23,12 +23,12 @@ class RandomForestModel(Model):
 
     def train(self, data: Data, cross_validation: int = 0):
         self.set_summary(cross_validation=cross_validation)
-        x_data = self.featurizer.compute(data)
+        x_data = self.featurizer.featurize(data.trajs)
         self.grid = GridSearchCV(self.rfc, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
 
     def predict(self, data: Data) -> List[Any]:
-        x_data = self.featurizer.compute(data)
+        x_data = self.featurizer.featurize(data.trajs)
         return self.grid.predict(x_data)
 
     def predict_single(self, traj: Trajectory) -> Any:

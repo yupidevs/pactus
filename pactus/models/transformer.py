@@ -34,6 +34,7 @@ class TransformerBlock(layers.Layer):
         out_conv2 = self.conv2(out_drop2, training=training)
         return out_conv2 + res
 
+
 def build_model(
     n_classes,
     input_shape,

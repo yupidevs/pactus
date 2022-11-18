@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import numpy as np
-import tensorflow as tf
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras

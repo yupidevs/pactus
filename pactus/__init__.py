@@ -3,7 +3,6 @@ import logging
 from yupi import DiffMethod, Trajectory, WindowType
 
 from pactus.dataset import Dataset
-from pactus.features import Featurizer
 from pactus.models import (
     DecisionTreeModel,
     Evaluation,
