@@ -259,7 +259,7 @@ class Dataset(Data):
         return Dataset._from_url("mnist_stroke", force=redownload)
 
     @staticmethod
-    def burdat2(redownload: bool = False) -> Dataset:
+    def hurdat2(redownload: bool = False) -> Dataset:
         """Loads the hurdat2 dataset"""
         return Dataset._from_url("hurdat2", force=redownload)
 
