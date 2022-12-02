@@ -33,13 +33,13 @@ LATEX_CM_TEMPLATE = Template(
         \toprule
         \multicolumn{2}{c}{\multirow{2}[4]{*}{\bf $model_name}} &
         \multicolumn{$cls_count}{c}{\bf Actual} &
-        \multirow{2}[4]{*}{\bf Recall} \\
+        \multirow{2}[4]{*}{\bf Precision} \\
         & \cline{2-$c_line_top}
         & & $cls_head & \\
         \midrule
         \multirow{$cls_count}{*}{\bf Predicted}
 $cls_rows            \midrule
-        \multicolumn{2}{c}{\bf Precision} & $precisions \\
+        \multicolumn{2}{c}{\bf Recall} & $recalls \\
         \bottomrule
     \end{tabular}
 \end{figure}
@@ -63,7 +63,7 @@ class Evaluation:
 
         self._confusion_matrix = confusion_matrix(
             self.y_true, self.y_pred, labels=self.classes
-        )
+        ).T
         pre, rec, f_sc, sup = precision_recall_fscore_support(
             self.y_true, self.y_pred, labels=self.classes
         )
@@ -88,17 +88,17 @@ class Evaluation:
         # Normalize the confusion matrix by columns
         c_matrix = self._conf_matrix_perc()
 
-        classes = list(self.classes) + ["recall"]
+        classes = list(self.classes) + ["precision"]
         col_width = 12
 
         print(*[f"{c:<12}".format() for c in classes], sep="")
         print(MAIN_SEP * col_width * (len(classes)))
         for i, row in enumerate(c_matrix):
-            row = np.append(row, self.recall[i])
+            row = np.append(row, self.precision[i])
             print(*[f"{round(c * 100, 2):<12}" for c in row], sep="")
         print(SUB_SEP * col_width * (len(classes)))
         print(
-            *[f"{round(rc * 100, 2):<12}" for rc in self.precision],
+            *[f"{round(rc * 100, 2):<12}" for rc in self.recall],
             sep="",
         )
 
@@ -158,18 +158,18 @@ class Evaluation:
         head = (
             "| Predicted \\ Actual | "
             + " | ".join(map(str, self.classes))
-            + " | Recall |\n"
+            + " | Precision |\n"
         )
         sep = "| :--: | " + " | ".join([":--:" for _ in self.classes]) + " | :--: |\n"
         body = ""
         for i, row in enumerate(c_matrix):
-            row = np.append(row, self.recall[i])
+            row = np.append(row, self.precision[i])
             str_row = [str(round(c * 100, 2)) for c in row]
             str_row[i] = f"**{str_row[i]}**"
             body += f"| **{self.classes[i]}** | " + " | ".join(str_row) + " |\n"
         recall = (
-            "| **Precision** | "
-            + " | ".join([str(round(rc * 100, 2)) for rc in self.precision])
+            "| **Recall** | "
+            + " | ".join([str(round(rc * 100, 2)) for rc in self.recall])
             + " |\n"
         )
         ans += head + sep + body + recall
@@ -190,7 +190,7 @@ class Evaluation:
             row = LATEX_CM_ROW_TEMPLATE.substitute(
                 cls_name=classes[i],
                 cls_vals=" & ".join(str_row),
-                cls_prec=f"{str(round(self.recall[i] * 100, 2))} \\%",
+                cls_prec=f"{str(round(self.precision[i] * 100, 2))} \\%",
             )
             cls_rows += row
 
@@ -202,7 +202,7 @@ class Evaluation:
             cls_count=len(classes),
             cls_head=" & ".join(classes),
             cls_rows=cls_rows,
-            precisions=" & ".join(
+            recalls=" & ".join(
                 [f"{str(round(rc * 100, 2))} \\%" for rc in self.precision]
             ),
         )
