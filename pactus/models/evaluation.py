@@ -60,6 +60,7 @@ class Evaluation:
         self.y_pred = predictions
         self.model_summary = model_summary
         self.classes = list(set(self.y_true))
+        self.classes.sort()
 
         self._confusion_matrix = confusion_matrix(
             self.y_true, self.y_pred, labels=self.classes
@@ -89,16 +90,16 @@ class Evaluation:
         c_matrix = self._conf_matrix_perc()
 
         classes = list(self.classes) + ["precision"]
-        col_width = 12
+        col_width = max(5, max(map(len, classes[:-1]))) + 2
 
-        print(*[f"{c:<12}".format() for c in classes], sep="")
+        print(*[f"{c:<{col_width}}".format() for c in classes], sep="")
         print(MAIN_SEP * col_width * (len(classes)))
         for i, row in enumerate(c_matrix):
             row = np.append(row, self.precision[i])
-            print(*[f"{round(c * 100, 2):<12}" for c in row], sep="")
+            print(*[f"{round(c * 100, 2):<{col_width}}" for c in row], sep="")
         print(SUB_SEP * col_width * (len(classes)))
         print(
-            *[f"{round(rc * 100, 2):<12}" for rc in self.recall],
+            *[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall],
             sep="",
         )
 
