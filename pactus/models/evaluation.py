@@ -105,7 +105,16 @@ class Evaluation:
 
     def show(self):
         """Show the evaluation results."""
+        self._show_general_stats()
         self._show_confusion_matrix()
+
+    def _show_general_stats(self):
+        """Show the general statistics."""
+        print("\nGeneral statistics:\n")
+        print(f"Accuracy: {self.acc_overall:.3f}")
+        print(f"F1-score: {self.f1_score:.3f}")
+        print(f"Mean precision: {self.precision.mean():.3f}")
+        print(f"Mean recall: {self.recall.mean():.3f}")
 
     def save(self, file_name: str) -> Path:
         """Save the evaluation to a file.
