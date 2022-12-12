@@ -10,6 +10,7 @@ from tensorflow import keras
 import pactus.config as cfg
 from pactus.dataset import Data
 from pactus.models import Model
+from pactus.models.evaluation import Evaluation
 from pactus.models.transformer import build_model
 
 NAME = "transformer_model"
@@ -29,23 +30,24 @@ class TransformerModel(Model):
         ff_dim: int = 4,
         num_transformer_blocks: int = 2,
         mlp_units: Union[List[int], None] = None,
-        mlp_droput: float = 0.4,
-        droput: float = 0.25,
+        mlp_dropout: float = 0.4,
+        dropout: float = 0.25,
         loss="categorical_crossentropy",
         optimizer=None,
         metrics=None,
         max_traj_len: int = -1,
         skip_long_trajs: bool = False,
         mask_value=cfg.MASK_VALUE,
+        name=NAME,
     ):
-        super().__init__(NAME)
+        super().__init__(name)
         self.head_size = head_size
         self.num_heads = num_heads
         self.ff_dim = ff_dim
         self.num_transformer_blocks = num_transformer_blocks
         self.mlp_units = [128] if mlp_units is None else mlp_units
-        self.mlp_dropout = mlp_droput
-        self.dropout = droput
+        self.mlp_dropout = mlp_dropout
+        self.dropout = dropout
         self.model: keras.Model
         self.loss = loss
         self.optimizer = DEFAULT_OPTIMIZER if optimizer is None else optimizer
@@ -53,6 +55,8 @@ class TransformerModel(Model):
         self.max_traj_len = max_traj_len
         self.skip_long_trajs = skip_long_trajs
         self.mask_value = mask_value
+        self.encoder: Union[LabelEncoder, None] = None
+        self.labels: Union[List[Any], None] = None
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -84,6 +88,8 @@ class TransformerModel(Model):
             validation_split=validation_split,
             batch_size=batch_size,
         )
+        self.encoder = None
+        self.labels = data.dataset.labels
         x_train, y_train = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
         input_shape = x_train.shape[1:]
@@ -187,12 +193,13 @@ class TransformerModel(Model):
 
     def _encode_labels(self, data: Data) -> np.ndarray:
         """Encode the labels"""
-        encoder = LabelEncoder()
-        encoder.fit(data.dataset.labels)
-        encoded_labels = encoder.transform(data.labels)
+        if self.encoder is None:
+            self.encoder = LabelEncoder()
+            self.encoder.fit(self.labels)
+        encoded_labels = self.encoder.transform(data.labels)
         assert isinstance(encoded_labels, np.ndarray)
 
-        classes = np.zeros((len(encoded_labels), len(encoder.classes_)))
+        classes = np.zeros((len(encoded_labels), len(self.encoder.classes_)))
         for i, label in enumerate(encoded_labels):
             classes[i][label] = 1
         return classes
@@ -217,3 +224,12 @@ class TransformerModel(Model):
     def _reshape_input(self, x_data: np.ndarray) -> np.ndarray:
         """Reshapes the input data to be compatible with the transformer."""
         return x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
+
+    def evaluate(self, data: Data) -> Evaluation:
+        assert self.encoder is not None, "Encoder is not set."
+        x_data, _ = self._get_input_data(data)
+        preds = self.model.predict(x_data)
+        preds = [pred.argmax() for pred in preds]
+        evals = self.encoder.inverse_transform(preds)
+        print(evals)
+        return Evaluation(self.summary, data, evals)

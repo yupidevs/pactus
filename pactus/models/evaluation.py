@@ -90,7 +90,7 @@ class Evaluation:
         c_matrix = self._conf_matrix_perc()
 
         classes = list(self.classes) + ["precision"]
-        col_width = max(5, max(map(len, classes[:-1]))) + 2
+        col_width = max(5, max(map(len, map(str, classes[:-1])))) + 2
 
         print(*[f"{c:<{col_width}}".format() for c in classes], sep="")
         print(MAIN_SEP * col_width * (len(classes)))
