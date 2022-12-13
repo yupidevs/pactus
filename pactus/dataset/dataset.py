@@ -6,10 +6,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Callable, List, Tuple, Union
 
+import numpy as np
 from git.cmd import Git
 from sklearn.model_selection import train_test_split
 from yupi import Trajectory
 from yupi.core import JSONSerializer
+from yupi.core.featurizers import Featurizer
 
 from pactus import config
 from pactus.dataset._utils import _get_path, download_dataset
@@ -30,6 +32,8 @@ class Data:
         self.trajs = trajs
         self.labels = labels
         self.label_counts = Counter(labels)
+        self.feats = None
+        self.last_featurizer = None
 
     @property
     def classes(self) -> List[Any]:
@@ -38,6 +42,26 @@ class Data:
 
     def __len__(self) -> int:
         return len(self.trajs)
+
+    def featurize(self, featurizer: Featurizer) -> np.ndarray:
+        """
+        Featurizes the trajectories.
+
+        Parameters
+        ----------
+        featurizer : Featurizer
+            Featurizer to be used.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array with the featurized trajectories.
+        """
+        if self.feats is None or self.last_featurizer != featurizer:
+            self.last_featurizer = featurizer
+            self.feats = featurizer.featurize(self.trajs)
+        assert self.feats is not None
+        return self.feats
 
     def take(
         self,

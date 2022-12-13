@@ -1,5 +1,5 @@
-from collections import Counter
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import Any, List, Union
 
@@ -130,7 +130,7 @@ class ZoomTransformerModel(TransformerModel):
         for traj, label in zip(data.trajs, data.labels):
             print(f"Eval progress: {i}/{len(data.trajs)}", end="\r")
             i += 1
-            new_data = Data(data.dataset, [traj]*50, [label]*50)
+            new_data = Data(data.dataset, [traj] * 50, [label] * 50)
             e_data = zoomletize(
                 new_data,
                 zoom=self.zoomlet_zoom,
