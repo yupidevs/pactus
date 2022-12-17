@@ -6,6 +6,12 @@ from tensorflow.keras import layers
 class TransformerBlock(layers.Layer):
     def __init__(self, head_size, num_heads, ff_dim, ff_dim2, rate=0.1):
         super().__init__()
+        self.head_size = head_size
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.ff_dim2 = ff_dim2
+        self.rate = rate
+
         self.att = layers.MultiHeadAttention(num_heads=num_heads, key_dim=head_size)
         self.layernorm1 = layers.LayerNormalization(epsilon=1e-6)
         self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
@@ -31,6 +37,19 @@ class TransformerBlock(layers.Layer):
         out_drop2 = self.dropout2(out_conv1, training=training)
         out_conv2 = self.conv2(out_drop2, training=training)
         return out_conv2 + res
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(
+            {
+                "head_size": self.head_size,
+                "num_heads": self.num_heads,
+                "ff_dim": self.ff_dim,
+                "ff_dim2": self.ff_dim2,
+                "rate": self.rate,
+            }
+        )
+        return config
 
 
 def build_model(
