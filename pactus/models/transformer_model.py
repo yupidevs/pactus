@@ -11,7 +11,7 @@ import pactus.config as cfg
 from pactus.dataset import Data
 from pactus.models import Model
 from pactus.models.evaluation import Evaluation
-from pactus.models.transformer import build_model
+from pactus.models.transformer import TransformerBlock, build_model
 
 NAME = "transformer_model"
 DEFAULT_OPTIMIZER = keras.optimizers.Adam(learning_rate=1e-2)
@@ -109,7 +109,7 @@ class TransformerModel(Model):
                     mask=self.mask_value,
                 )
                 if model_path is None
-                else keras.models.load_model(model_path)
+                else keras.models.load_model(model_path, custom_objects={'TransformerBlock':TransformerBlock})
             )
             model.fit(
                 x_train,

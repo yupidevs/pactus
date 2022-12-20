@@ -4,8 +4,10 @@ from tensorflow.keras import layers
 
 
 class TransformerBlock(layers.Layer):
-    def __init__(self, head_size, num_heads, ff_dim, ff_dim2, rate=0.1):
-        super().__init__()
+    def __init__(
+        self, head_size, num_heads, ff_dim, ff_dim2, *args, rate=0.1, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
         self.head_size = head_size
         self.num_heads = num_heads
         self.ff_dim = ff_dim
