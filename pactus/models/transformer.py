@@ -76,7 +76,7 @@ def build_model(
             num_heads,
             ff_dim,
             inputs.shape[-1],
-            dropout,
+            rate=dropout,
         )(_x)
 
     _x = layers.GlobalAveragePooling2D(data_format="channels_first")(_x)
