@@ -213,7 +213,7 @@ class Evaluation:
             cls_head=" & ".join(classes),
             cls_rows=cls_rows,
             recalls=" & ".join(
-                [f"{str(round(rc * 100, 2))} \\%" for rc in self.precision]
+                [f"{str(round(rc * 100, 2))} \\%" for rc in self.recall]
             ),
         )
         return ans

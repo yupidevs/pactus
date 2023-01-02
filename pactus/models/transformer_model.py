@@ -89,11 +89,11 @@ class TransformerModel(Model):
             batch_size=batch_size,
         )
         self.encoder = None
-        self.labels = data.dataset.labels
+        self.labels = data.labels
         x_train, y_train = self._get_input_data(data)
         n_classes = len(data.dataset.classes)
         input_shape = x_train.shape[1:]
-        callbacks = DEFAULT_CALLBACKS if callbacks is None else callbacks
+        callbacks = DEFAULT_CALLBACKS.copy() if callbacks is None else callbacks
         model_path = None
         if checkpoint is not None:
             callbacks.append(checkpoint)
@@ -231,5 +231,4 @@ class TransformerModel(Model):
         preds = self.model.predict(x_data)
         preds = [pred.argmax() for pred in preds]
         evals = self.encoder.inverse_transform(preds)
-        print(evals)
         return Evaluation(self.summary, data, evals)
