@@ -6,7 +6,7 @@ from yupi.core import featurizers
 from pactus.dataset import Dataset
 from pactus.models import Evaluation, EvaluationComparison
 
-__version__ = "0.1.1a8"
+__version__ = "0.2.0"
 
 __all__ = [
     "Dataset",
