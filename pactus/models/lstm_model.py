@@ -39,7 +39,9 @@ class LSTMModel(Model):
         self.max_len = 0
         metrics = ["accuracy"] if metrics is None else metrics
         self.units = [128, 64] if units is None else units
-        self.set_summary(loss=loss, optimizer=optimizer, metrics=metrics, **kwargs)
+        kwargs.update(dict(loss=loss, optimizer=optimizer, metrics=metrics))
+        self.compile_args = kwargs
+        self.set_summary(**self.compile_args)
 
     def _get_x_data(self, max_len: int, trajs: List[Trajectory]) -> np.ndarray:
         _X = np.empty(
@@ -80,11 +82,7 @@ class LSTMModel(Model):
         )
         model.add(layers.Dense(15, activation="relu"))
         model.add(layers.Dense(n_classes, activation="softmax"))
-        model.compile(
-            loss="sparse_categorical_crossentropy",
-            optimizer="rmsprop",
-            metrics=["accuracy"],
-        )
+        model.compile(**self.compile_args)
         return model
 
     def _prepare_data(self, data: Data) -> Tuple[np.ndarray, np.ndarray]:
@@ -102,7 +100,7 @@ class LSTMModel(Model):
         data: Data,
         cross_validation=0,
         epochs=10,
-        batch_size=1,
+        batch_size=None,
         validation_split=None,
         callbacks: Union[list, None] = None,
         checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,

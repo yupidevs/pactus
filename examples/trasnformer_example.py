@@ -15,7 +15,6 @@ datasets = [
     Dataset.uci_gotrack(),
     Dataset.uci_characters(),
     Dataset.uci_movement_libras(),
-    Dataset.stochastic_models(),
 ]
 
 
@@ -45,12 +44,12 @@ for dataset in datasets:
 
     # Define the model
     model = TransformerModel(
-        head_size=256,
-        num_heads=1,
-        num_transformer_blocks=2,
+        head_size=512,
+        num_heads=4,
+        num_transformer_blocks=4,
         optimizer=keras.optimizers.Adam(learning_rate=1e-4),
     )
 
-    model.train(train)
+    model.train(train, epochs=150, batch_size=64)
     evaluation = model.evaluate(test)
     evaluation.show()

@@ -91,7 +91,7 @@ class TransformerModel(Model):
         self.encoder = None
         self.labels = data.labels
         x_train, y_train = self._get_input_data(data)
-        n_classes = len(data.dataset.classes)
+        n_classes = len(data.classes)
         input_shape = x_train.shape[1:]
         callbacks = DEFAULT_CALLBACKS.copy() if callbacks is None else callbacks
         model_path = None
@@ -109,7 +109,9 @@ class TransformerModel(Model):
                     mask=self.mask_value,
                 )
                 if model_path is None
-                else keras.models.load_model(model_path, custom_objects={'TransformerBlock':TransformerBlock})
+                else keras.models.load_model(
+                    model_path, custom_objects={"TransformerBlock": TransformerBlock}
+                )
             )
             model.fit(
                 x_train,

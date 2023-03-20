@@ -1,23 +1,23 @@
 from typing import Any, List
 
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from xgboost import XGBClassifier
 from yupi import Trajectory
 
 from pactus import featurizers
 from pactus.dataset import Data
-from pactus.models import Model
+from pactus.models.model import Model
 
-NAME = "random_forest"
+NAME = "xgboost"
 
 
-class RandomForestModel(Model):
-    """Implementation of a Random Forest Classifier."""
+class XGBoostModel(Model):
+    """Implementation of a XGBoost Classifier."""
 
     def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
         super().__init__(NAME)
         self.featurizer = featurizer
-        self.model = RandomForestClassifier(**kwargs)
+        self.model = XGBClassifier(**kwargs)
         self.grid: GridSearchCV
         self.set_summary(**kwargs)
 

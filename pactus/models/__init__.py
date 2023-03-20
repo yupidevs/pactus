@@ -7,6 +7,7 @@ from pactus.models.model import Model
 from pactus.models.random_forest_model import RandomForestModel
 from pactus.models.svm_model import SVMModel
 from pactus.models.transformer_model import TransformerModel
+from pactus.models.xgboost_model import XGBoostModel
 from pactus.models.zoom_transformer_model import ZoomTransformerModel
 
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "SVMModel",
     "TransformerModel",
     "ZoomTransformerModel",
+    "XGBoostModel",
     "LSTMModel",
 ]
