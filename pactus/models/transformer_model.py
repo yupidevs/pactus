@@ -233,4 +233,4 @@ class TransformerModel(Model):
         preds = self.model.predict(x_data)
         preds = [pred.argmax() for pred in preds]
         evals = self.encoder.inverse_transform(preds)
-        return Evaluation(self.summary, data, evals)
+        return Evaluation.from_data(data, evals, self.summary)

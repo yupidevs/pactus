@@ -57,4 +57,4 @@ class Model(ABC):
 
         logging.info("Evaluating the %s model", self.name)
         predictions = self._predict(data)
-        return Evaluation(self.summary, data, predictions)
+        return Evaluation.from_data(data, predictions, self.summary)

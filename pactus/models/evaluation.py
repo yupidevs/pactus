@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from string import Template
@@ -50,14 +52,16 @@ $cls_rows            \midrule
 class Evaluation:
     def __init__(
         self,
+        dataset_name: str,
+        trajs_ids: List[str],
+        y_true: List[Any],
+        y_pred: List[Any],
         model_summary: dict,
-        data: Data,
-        predictions: List[Any],
     ):
-        self.dataset = data.dataset
-        self.trajs = data.trajs
-        self.y_true = data.labels
-        self.y_pred = predictions
+        self.dataset_name = dataset_name
+        self.traj_ids = trajs_ids
+        self.y_true = y_true
+        self.y_pred = y_pred
         self.model_summary = model_summary
         self.classes = list(set(self.y_true))
         self.classes.sort()
@@ -74,7 +78,21 @@ class Evaluation:
         self.support = np.asarray(sup)
 
         self.acc_overall = accuracy_score(self.y_true, self.y_pred, normalize=True)
-        self.f1_score = f1_score(self.y_true, self.y_pred, average="weighted")
+        self.f1_score = f1_score(self.y_true, self.y_pred, average="macro")
+
+    @staticmethod
+    def from_data(
+        data: Data,
+        predictions: List[Any],
+        model_summary: dict,
+    ) -> Evaluation:
+        return Evaluation(
+            dataset_name=data.dataset.name,
+            trajs_ids=[traj.traj_id for traj in data.trajs if traj.traj_id is not None],
+            y_true=data.labels,
+            y_pred=predictions,
+            model_summary=model_summary,
+        )
 
     def _conf_matrix_perc(self) -> np.ndarray:
         c_matrix = self._confusion_matrix.astype("float")
@@ -116,7 +134,43 @@ class Evaluation:
         print(f"Mean precision: {self.precision.mean():.3f}")
         print(f"Mean recall: {self.recall.mean():.3f}")
 
-    def save(self, file_name: str) -> Path:
+    @staticmethod
+    def load(file_name: str) -> Evaluation:
+        """Save the evaluation to a file.
+
+        Parameters
+        ----------
+        file_name : str
+            The name of the file to save the evaluation to. It
+            must end with '.json'.
+
+        Returns
+        -------
+        Path
+            The path to the saved file.
+        """
+
+        if not file_name.endswith(".json"):
+            raise ValueError("file_name extension must be '.json'")
+
+        with open(file_name, "r", encoding="utf-8") as data_fd:
+            data = json.load(data_fd)
+
+        assert len(data["indices"]) == len(data["y_pred"])
+        ds_name = data["dataset_name"]
+        indices = data["indices"]
+        y_pred = data["y_pred"]
+        y_true = data["y_true"]
+        summary = data["model_summary"]
+        return Evaluation(
+            dataset_name=ds_name,
+            trajs_ids=indices,
+            y_pred=y_pred,
+            y_true=y_true,
+            model_summary=summary,
+        )
+
+    def save(self, file_name: str):
         """Save the evaluation to a file.
 
         Parameters
@@ -135,28 +189,30 @@ class Evaluation:
             raise ValueError("file_name extension must be '.json'")
 
         data = {
-            "indices": [
-                int(traj.traj_id) for traj in self.trajs if traj.traj_id is not None
-            ],
-            "predictions": self.y_pred,
+            "dataset_name": self.dataset_name,
+            "indices": self.traj_ids,
+            "y_pred": list(self.y_pred),
+            "y_true": list(self.y_true),
+            "classes": list(self.classes),
             "model_summary": self.model_summary,
         }
 
-        assert len(data["indices"]) == len(data["predictions"])
+        assert len(data["indices"]) == len(data["y_pred"])
 
-        file_path = _get_path(config.DS_EVALS_DIR, self.dataset.name) / file_name
+        if "/" in file_name:
+            dir_name = "/".join(file_name.split("/")[:-1])
+            dir_path = Path(dir_name)
+            dir_path.mkdir(parents=True, exist_ok=True)
 
-        with open(file_path, "w", encoding="utf-8") as data_fd:
+        with open(file_name, "w", encoding="utf-8") as data_fd:
             json.dump(data, data_fd, ensure_ascii=False, indent=4)
-
-        return file_path
 
     def to_markdown(self) -> str:
         """Evaluation summary in markdown style."""
         summary = self.model_summary.copy()
         model_name = summary.pop("name")
         ans = "# Evaluation results\n\n"
-        ans += f"**Dataset:** {self.dataset.name} \\\n"
+        ans += f"**Dataset:** {self.dataset_name} \\\n"
         ans += f"**Model:** {model_name}\n"
         ans += "\n## Model Summary\n\n"
         for param, val in summary.items():
@@ -205,7 +261,7 @@ class Evaluation:
             cls_rows += row
 
         ans += LATEX_CM_TEMPLATE.substitute(
-            caption=f"Confusion matrix for {model_name}. Dataset: {self.dataset.name}",
+            caption=f"Confusion matrix for {model_name}. Dataset: {self.dataset_name}",
             model_name=model_name,
             c_cols="c" * len(classes),
             c_line_top=str(len(classes) + 1),
