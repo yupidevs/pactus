@@ -118,20 +118,7 @@ class Evaluation:
         print(SUB_SEP * col_width * (len(classes)))
         print(
             *[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall],
-            sep="",ForestModel(
-            featurizer=featurizer,
-            max_features=16,
-            n_estimators=200,
-            bootstrap=False,
-            warm_start=True,
-            n_jobs=6,
-            random_state=SEED,
-        ),
-        DecisionTreeModel(
-            featurizer=featurizer,
-            max_depth=7,
-            random_state=SEED,
-        ),
+            sep="",
         )
 
     def show(self):
