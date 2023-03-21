@@ -54,14 +54,14 @@ class Evaluation:
         self,
         dataset_name: str,
         trajs_ids: List[str],
-        y_true: List[Any],
-        y_pred: List[Any],
+        y_true,
+        y_pred,
         model_summary: dict,
     ):
         self.dataset_name = dataset_name
         self.traj_ids = trajs_ids
-        self.y_true = y_true
-        self.y_pred = y_pred
+        self.y_true = y_true if not isinstance(y_true, np.ndarray) else y_true.tolist()
+        self.y_pred = y_pred if not isinstance(y_pred, np.ndarray) else y_pred.tolist()
         self.model_summary = model_summary
         self.classes = list(set(self.y_true))
         self.classes.sort()
@@ -118,7 +118,20 @@ class Evaluation:
         print(SUB_SEP * col_width * (len(classes)))
         print(
             *[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall],
-            sep="",
+            sep="",ForestModel(
+            featurizer=featurizer,
+            max_features=16,
+            n_estimators=200,
+            bootstrap=False,
+            warm_start=True,
+            n_jobs=6,
+            random_state=SEED,
+        ),
+        DecisionTreeModel(
+            featurizer=featurizer,
+            max_depth=7,
+            random_state=SEED,
+        ),
         )
 
     def show(self):
@@ -191,9 +204,9 @@ class Evaluation:
         data = {
             "dataset_name": self.dataset_name,
             "indices": self.traj_ids,
-            "y_pred": list(self.y_pred),
-            "y_true": list(self.y_true),
-            "classes": list(self.classes),
+            "y_pred": self.y_pred,
+            "y_true": self.y_true,
+            "classes": self.classes,
             "model_summary": self.model_summary,
         }
 
