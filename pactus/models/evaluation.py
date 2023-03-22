@@ -78,7 +78,9 @@ class Evaluation:
         self.support = np.asarray(sup)
 
         self.acc_overall = accuracy_score(self.y_true, self.y_pred, normalize=True)
-        self.f1_score = f1_score(self.y_true, self.y_pred, average="macro")
+        self.f1_score = f1_score(
+            self.y_true, self.y_pred, average="macro", zero_division=0
+        )
 
     @staticmethod
     def from_data(
@@ -136,18 +138,18 @@ class Evaluation:
 
     @staticmethod
     def load(file_name: str) -> Evaluation:
-        """Save the evaluation to a file.
+        """Loads an evaluation from a file.
 
         Parameters
         ----------
         file_name : str
-            The name of the file to save the evaluation to. It
+            The name of the file to load the evaluation from. It
             must end with '.json'.
 
         Returns
         -------
-        Path
-            The path to the saved file.
+        Evaluation
+            The loaded evaluation.
         """
 
         if not file_name.endswith(".json"):
@@ -178,11 +180,6 @@ class Evaluation:
         file_name : str
             The name of the file to save the evaluation to. It
             must end with '.json'.
-
-        Returns
-        -------
-        Path
-            The path to the saved file.
         """
 
         if not file_name.endswith(".json"):
