@@ -70,7 +70,7 @@ class Evaluation:
             self.y_true, self.y_pred, labels=self.classes
         ).T
         pre, rec, f_sc, sup = precision_recall_fscore_support(
-            self.y_true, self.y_pred, labels=self.classes
+            self.y_true, self.y_pred, labels=self.classes, zero_division=0
         )
         self.precision = np.asarray(pre)
         self.recall = np.asarray(rec)
