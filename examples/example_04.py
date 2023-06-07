@@ -14,6 +14,7 @@ datasets = [
     Dataset.hurdat2(),
     Dataset.cma_bst(),
     Dataset.mnist_stroke(),
+    Dataset.uci_pen_digits(),
     Dataset.uci_gotrack(),
     Dataset.uci_characters(),
     Dataset.uci_movement_libras(),

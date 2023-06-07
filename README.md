@@ -100,3 +100,11 @@ bike      car       subway    taxi-bus  train     walk      precision
 89.83     79.1      82.35     91.42     87.88     95.76     
 ```
 
+## Available datasets
+
+See the whole [list of datasets](https://github.com/yupidevs/trajectory-datasets) compatible with pactus
+
+
+## Contributing
+
+Follow the guidlines from [pactus documentation](https://pactus.readthedocs.io/en/latest/)
