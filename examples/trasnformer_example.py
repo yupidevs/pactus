@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from tensorflow import keras
 
 from pactus import Dataset, featurizers
@@ -18,8 +20,8 @@ datasets = [
 ]
 
 
-def dataset_splitter(ds: Data) -> tuple[Data, Data]:
-    if ds.dataset.name == "geolife":
+def dataset_splitter(ds: Data) -> Tuple[Data, Data]:
+    if ds.dataset_name == "geolife":
         use_classes = {"car", "taxi-bus", "walk", "bike", "subway", "train"}
         return (
             ds.filter(lambda traj, _: len(traj) > 10 and traj.dt < 8)
@@ -27,7 +29,7 @@ def dataset_splitter(ds: Data) -> tuple[Data, Data]:
             .filter(lambda _, lbl: lbl in use_classes)
             .split(train_size=0.7, random_state=SEED)
         )
-    if ds.dataset.name == "mnist_stroke":
+    if ds.dataset_name == "mnist_stroke":
         ds = ds.take(10_000)
     return ds.filter(
         lambda traj, _: len(traj) >= 5 and traj.r.delta.norm.sum() > 0
@@ -50,6 +52,6 @@ for dataset in datasets:
         optimizer=keras.optimizers.Adam(learning_rate=1e-4),
     )
 
-    model.train(train, epochs=150, batch_size=64)
+    model.train(train, dataset, epochs=150, batch_size=64)
     evaluation = model.evaluate(test)
     evaluation.show()

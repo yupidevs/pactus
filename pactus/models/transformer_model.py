@@ -8,6 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 
 import pactus.config as cfg
+from pactus import Dataset
 from pactus.dataset import Data
 from pactus.models import Model
 from pactus.models.evaluation import Evaluation
@@ -57,6 +58,7 @@ class TransformerModel(Model):
         self.mask_value = mask_value
         self.encoder: Union[LabelEncoder, None] = None
         self.labels: Union[List[Any], None] = None
+        self.dataset: Union[Dataset, None] = None
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -75,6 +77,7 @@ class TransformerModel(Model):
     def train(
         self,
         data: Data,
+        dataset: Dataset,
         cross_validation: int = 0,
         epochs: int = 10,
         validation_split: float = 0.2,
@@ -90,6 +93,7 @@ class TransformerModel(Model):
         )
         self.encoder = None
         self.labels = data.labels
+        self.dataset = dataset
         x_train, y_train = self._get_input_data(data)
         n_classes = len(data.classes)
         input_shape = x_train.shape[1:]
@@ -208,8 +212,10 @@ class TransformerModel(Model):
 
     def _extract_raw_data(self, data: Data) -> np.ndarray:
         """Extracts the raw data from the yupi trajectories"""
+        assert self.dataset is not None, "Dataset must be set"
+
         trajs = data.trajs
-        max_len = np.max([len(traj) for traj in data.dataset.trajs])
+        max_len = np.max([len(traj) for traj in self.dataset.trajs])
         if self.max_traj_len > 0:
             max_len = self.max_traj_len
         raw_data = [np.hstack((traj.r, np.reshape(traj.t, (-1, 1)))) for traj in trajs]

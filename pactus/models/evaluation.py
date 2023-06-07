@@ -89,7 +89,7 @@ class Evaluation:
         model_summary: dict,
     ) -> Evaluation:
         return Evaluation(
-            dataset_name=data.dataset.name,
+            dataset_name=data.dataset_name,
             trajs_ids=[traj.traj_id for traj in data.trajs if traj.traj_id is not None],
             y_true=data.labels,
             y_pred=predictions,

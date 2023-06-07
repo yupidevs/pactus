@@ -65,7 +65,7 @@ checkpoint = keras.callbacks.ModelCheckpoint(
     save_best_only=True,
     mode="min",
 )
-lstm.train(train, epochs=20, checkpoint=checkpoint)
+lstm.train(train, dataset, epochs=20, checkpoint=checkpoint)
 evaluation = lstm.evaluate(test)
 evaluation.show()
 
@@ -77,6 +77,6 @@ checkpoint = keras.callbacks.ModelCheckpoint(
     save_best_only=True,
     mode="min",
 )
-transformer.train(train, epochs=150, checkpoint=checkpoint)
+transformer.train(train, dataset, epochs=150, checkpoint=checkpoint)
 evaluation = transformer.evaluate(test)
 evaluation.show()

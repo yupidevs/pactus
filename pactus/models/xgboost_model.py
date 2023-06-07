@@ -43,6 +43,7 @@ class XGBoostModel(Model):
     def predict(self, data: Data) -> List[Any]:
         x_data = data.featurize(self.featurizer)
         predicted = self.grid.predict(x_data)
+        assert self.encoder is not None
         return self.encoder.inverse_transform(predicted)
 
     def predict_single(self, traj: Trajectory) -> Any:

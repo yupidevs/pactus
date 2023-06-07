@@ -27,7 +27,7 @@ checkpoint = keras.callbacks.ModelCheckpoint(
     save_best_only=True,
     mode="min",
 )
-model.train(train, epochs=150, batch_size=64, checkpoint=checkpoint)
+model.train(train, dataset, epochs=150, batch_size=64, checkpoint=checkpoint)
 
 # Evaluate the model on a test dataset
 evaluation = model.evaluate(test)

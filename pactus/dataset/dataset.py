@@ -26,23 +26,27 @@ class Data:
 
     Parameters
     ----------
-    dataset : Dataset
-        Base dataset from where the data is being used.
     trajs: List[Trajectory]
         A list that contains a subset of the dataset trajectories.
     labels: List[Any]
         A list that contains the label of each trajectory from the subset.
+    dataset_name: str
+        Name of the dataset where the trajectories come from. If not provided,
+        it will be set to "custom".
     """
 
     def __init__(
-        self, dataset: Dataset, trajs: List[Trajectory], labels: List[Any]
+        self,
+        trajs: List[Trajectory],
+        labels: List[Any],
+        dataset_name: str = "custom",
     ) -> None:
-        self.dataset = dataset
         self.trajs = trajs
         self.labels = labels
         self.label_counts = Counter(labels)
         self.feats = None
         self.last_featurizer = None
+        self.dataset_name = dataset_name
 
     @property
     def classes(self) -> List[Any]:
@@ -79,7 +83,30 @@ class Data:
         shuffle: bool = True,
         random_state: Union[int, None] = None,
     ) -> Data:
-        """Takes a subset of the dataset."""
+        """
+        Takes a subset of the dataset.
+        
+        Parameters
+        ----------
+        size : Union[float, int]
+            If float, it should be between 0 and 1 and it will be interpreted
+            as the proportion of the dataset to be taken. If int, it should be
+            between 0 and the dataset size and it will be interpreted as the
+            number of trajectories to be taken.
+        stratify : bool, optional
+            If True, the dataset will be stratified by the labels, by default
+            True.
+        shuffle : bool, optional
+            If True, the dataset will be shuffled before taking the subset,
+            by default True.
+        random_state : Union[int, None], optional
+            Random state to be used, by default None.
+        
+        Returns
+        -------
+        Data
+            A new Data object with the subset of the dataset.
+        """
         if isinstance(size, int):
             assert 0 < size < len(self), "size should be within 0 and len(self)"
             size /= len(self)
@@ -89,10 +116,24 @@ class Data:
         )
         return ans
 
-    def cut(self, size: Union[float, int]):
+    def cut(self, size: Union[float, int]) -> Tuple[Data, Data]:
         """
         Similar to split, but without shuffle, stratify, etc. Just slices the
         dataset into two parts.
+
+        Parameters
+        ----------
+        size : Union[float, int]
+            If float, it should be between 0 and 1 and it will be interpreted
+            as the proportion of the dataset to be taken. If int, it should be
+            between 0 and the dataset size and it will be interpreted as the
+            number of trajectories to be taken.
+        
+        Returns
+        -------
+        Tuple[Data, Data]
+            A tuple with two Data objects, the first one with the first part
+            of the cut and the second one with the second part.
         """
         if isinstance(size, float):
             assert 0 < size < 1, "size should be within 0 and 1 if float"
@@ -104,8 +145,8 @@ class Data:
 
         left, right = self.trajs[:size], self.trajs[size:]
         left_labels, right_labels = self.labels[:size], self.labels[size:]
-        left_d = Data(self.dataset, left, left_labels)
-        right_d = Data(self.dataset, right, right_labels)
+        left_d = Data(left, left_labels)
+        right_d = Data(right, right_labels)
         return left_d, right_d
 
     def split(
@@ -156,8 +197,8 @@ class Data:
             shuffle=shuffle,
         )
 
-        train_data = Data(self.dataset, x_train, y_train)
-        test_data = Data(self.dataset, x_test, y_test)
+        train_data = Data(x_train, y_train)
+        test_data = Data(x_test, y_test)
         return train_data, test_data
 
     def map(self, func: Callable[[Trajectory, Any], Tuple[Trajectory, Any]]) -> Data:
@@ -182,7 +223,7 @@ class Data:
             traj, label = func(traj, label)
             trajs.append(traj)
             labels.append(label)
-        return Data(self.dataset, trajs, labels)
+        return Data(trajs, labels)
 
     def filter(self, func: Callable[[Trajectory, Any], bool]) -> Data:
         """
@@ -204,7 +245,7 @@ class Data:
                 trajs.append(traj)
                 labels.append(label)
         logging.info("Filtered %d of %d trajectories", len(trajs), len(self))
-        return Data(self.dataset, trajs, labels)
+        return Data(trajs, labels)
 
 
 class Dataset(Data):
@@ -236,7 +277,7 @@ class Dataset(Data):
         self.version = version
         self.trajs = trajs
         self.labels = labels
-        super().__init__(self, trajs, labels)
+        super().__init__(trajs, labels)
 
     def __len__(self):
         return len(self.trajs)

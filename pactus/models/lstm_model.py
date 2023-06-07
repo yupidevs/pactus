@@ -8,6 +8,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from yupi import Trajectory
 
+from pactus import Dataset
 from pactus import config as cfg
 from pactus.dataset import Data
 from pactus.models.evaluation import Evaluation
@@ -35,6 +36,7 @@ class LSTMModel(Model):
         super().__init__(NAME)
         self.masking_value = cfg.MASK_VALUE if masking_value is None else masking_value
         self.encoder: Union[LabelEncoder, None] = None
+        self.dataset: Union[Dataset, None] = None
         self.model: keras.Secuential
         self.max_len = 0
         metrics = ["accuracy"] if metrics is None else metrics
@@ -86,18 +88,21 @@ class LSTMModel(Model):
         return model
 
     def _prepare_data(self, data: Data) -> Tuple[np.ndarray, np.ndarray]:
+        assert self.dataset is not None, "Dataset is not set"
+
         self.encoder = LabelEncoder()
         self.encoder.fit(data.labels)
         encoded_labels = self.encoder.transform(data.labels)
         y_data = np.array(encoded_labels)
 
-        self.max_len = max(map(len, data.dataset.trajs))
+        self.max_len = max(map(len, self.dataset.trajs))
         x_data = self._get_x_data(self.max_len, data.trajs)
         return x_data, y_data
 
     def train(
         self,
         data: Data,
+        dataset: Dataset,
         cross_validation=0,
         epochs=10,
         batch_size=None,
@@ -110,6 +115,7 @@ class LSTMModel(Model):
         self.set_summary(epochs=epochs, validation_split=validation_split)
         callbacks = DEFAULT_CALLBACKS.copy() if callbacks is None else callbacks
         model_path = None
+        self.dataset = dataset
         if checkpoint is not None:
             callbacks.append(checkpoint)
             if Path(checkpoint.filepath).exists():
