@@ -1,0 +1,20 @@
+﻿name: Run tests
+
+on: [push, workflow_dispatch]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.6'
+    - name: Install pytest
+      run: pip install pytest
+    - name: Install pactus
+      run: pip install .
+    - name: Run tests
+      run: python -m pytest
