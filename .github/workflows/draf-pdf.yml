@@ -1,4 +1,6 @@
-on: [push]
+name: Compile paper
+
+on: [workflow_dispatch]
 
 jobs:
   paper:
