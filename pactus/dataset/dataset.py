@@ -23,6 +23,15 @@ class Data:
     """
     Structure that groups the trajectories and labels along with some
     useful methods to work with the set of them.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        Base dataset from where the data is being used.
+    trajs: List[Trajectory]
+        A list that contains a subset of the dataset trajectories.
+    labels: List[Any]
+        A list that contains the label of each trajectory from the subset.
     """
 
     def __init__(
@@ -199,7 +208,20 @@ class Data:
 
 
 class Dataset(Data):
-    """Wraps the data with some general properties that describes a full dataset"""
+    """
+    Wraps the data with some general properties that describes a full dataset
+
+    Parameters
+    ----------
+    name : str
+        Name of the dataset.
+    trajs: List[Trajectory]
+        A list that contains the dataset trajectories.
+    labels: List[Any]
+        A list that contains the label of each trajectory.
+    version: int
+        Dataset version.
+    """
 
     _last_tag = None
 
