@@ -45,7 +45,7 @@ class EvaluationComparison:
 
         self.evals_by_dataset: Dict[str, List[Evaluation]] = {}
         for evaluation in self.evals:
-            ds_name = evaluation.dataset.name
+            ds_name = evaluation.dataset_name
             self.evals_by_dataset[ds_name] = self.evals_by_dataset.get(ds_name, []) + [
                 evaluation
             ]

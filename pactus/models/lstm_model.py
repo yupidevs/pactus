@@ -5,7 +5,6 @@ from typing import Any, List, Tuple, Union
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
-from tensorflow.keras import layers
 from yupi import Trajectory
 
 from pactus import Dataset
@@ -65,25 +64,27 @@ class LSTMModel(Model):
         max_len, traj_dim = input_shape
         model = keras.Sequential()
         model.add(
-            layers.Masking(
-                mask_value=self.masking_value, input_shape=(max_len, traj_dim)
+            keras.layers.Masking(
+                mask_value=self.masking_value,
+                input_shape=(max_len, traj_dim),
             )
         )
         for units_val in self.units:
             model.add(
-                layers.LSTM(
+                keras.layers.LSTM(
                     units_val,
                     input_shape=(max_len, traj_dim),
                     return_sequences=True,
                 )
             )
         model.add(
-            layers.Bidirectional(
-                layers.LSTM(32, input_shape=(max_len, traj_dim)), merge_mode="ave"
+            keras.layers.Bidirectional(
+                keras.layers.LSTM(32, input_shape=(max_len, traj_dim)),
+                merge_mode="ave",
             )
         )
-        model.add(layers.Dense(15, activation="relu"))
-        model.add(layers.Dense(n_classes, activation="softmax"))
+        model.add(keras.layers.Dense(15, activation="relu"))
+        model.add(keras.layers.Dense(n_classes, activation="softmax"))
         model.compile(**self.compile_args)
         return model
 

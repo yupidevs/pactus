@@ -264,7 +264,7 @@ class Dataset(Data):
         Dataset version.
     """
 
-    _last_tag = None
+    _last_tag: Union[str, None] = None
 
     def __init__(
         self,
@@ -277,7 +277,7 @@ class Dataset(Data):
         self.version = version
         self.trajs = trajs
         self.labels = labels
-        super().__init__(trajs, labels)
+        super().__init__(trajs, labels, dataset_name=name)
 
     def __len__(self):
         return len(self.trajs)
@@ -286,13 +286,12 @@ class Dataset(Data):
     def _from_json(name: str, data: dict) -> Dataset:
         assert "trajs" in data, "trajs not found in dataset"
         assert "labels" in data, "labels not found in dataset"
-        assert "version" in data, "version not found in dataset"
         trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
         return Dataset(
             name=name,
             trajs=trajs,
             labels=data["labels"],
-            version=data["version"],
+            version=data.get("version", 0),
         )
 
     @staticmethod
@@ -315,7 +314,7 @@ class Dataset(Data):
         if not force and yupi_data_file.exists():
             with open(yupi_data_file, "r", encoding="utf-8") as yupi_fd:
                 data = json.load(yupi_fd)
-                if "trajs" in data and "labels" in data and "version" in data:
+                if "trajs" in data and "labels" in data:
                     return Dataset._from_json(name, data)
             logging.warning("Invalid dataset file, downloading again")
 

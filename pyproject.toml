@@ -70,6 +70,9 @@ push = false
 "pactus/__init__.py" = [
     '__version__ = "{version}"',
 ]
+"docs/source/conf.py" = [
+    'release = "{version}"',
+]
 
 [build-system]
 requires      = ["setuptools>=61.0.0",
@@ -78,6 +81,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.mypy]
 python_version = "3.8"
+exclude = [
+    "docs",
+]
 
 [[tool.mypy.overrides]]
 module = [
