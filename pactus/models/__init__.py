@@ -8,18 +8,16 @@ from pactus.models.random_forest_model import RandomForestModel
 from pactus.models.svm_model import SVMModel
 from pactus.models.transformer_model import TransformerModel
 from pactus.models.xgboost_model import XGBoostModel
-from pactus.models.zoom_transformer_model import ZoomTransformerModel
 
 __all__ = [
+    "Model",
     "DecisionTreeModel",
     "Evaluation",
     "EvaluationComparison",
     "KNeighborsModel",
-    "Model",
     "RandomForestModel",
     "SVMModel",
     "TransformerModel",
-    "ZoomTransformerModel",
     "XGBoostModel",
     "LSTMModel",
 ]
