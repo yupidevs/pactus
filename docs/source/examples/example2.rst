@@ -73,6 +73,7 @@ to create a featurizer for this model, and we can directly use it:
        num_heads=4,
        num_transformer_blocks=4,
        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+       random_state=SEED,
    )
 
 .. _Training and evaluation 2:
@@ -93,12 +94,7 @@ Training and evaluation can be conducted as follows:
    # Print the evaluation
    evaluation.show()
 
-Evaluation results should look like:
-
-.. code-block:: text
-
-   [Coming soon] 
-
+It may take a lot of time to complete depending on the hardware running the script. 
 
 .. _References 2:
 

@@ -10,7 +10,6 @@ The example is structured as follows:
   | :ref:`Loading Data 3`
   | :ref:`Loading the model 3`
   | :ref:`Training and evaluation 3`
-  | :ref:`References 3`
 
 .. note::
    You can access `the script of this example <https://github.com/yupidevs/pactus/blob/master/examples/example_03.py>`_.
@@ -34,6 +33,7 @@ Import all the dependencies:
        RandomForestModel,
        SVMModel,
        TransformerModel,
+       XGBoostModel,
    )
 
 .. _Definition of parameters 3:
@@ -52,17 +52,17 @@ We define a random seed for reproducibility
 3. Loading Data
 ---------------
 
-To load the MNIST stroke dataset we can simply do:
+To load the UCI Characters dataset we can simply do:
 
 .. code-block:: python
 
-   dataset = Dataset.mnist_stroke()
+   dataset = Dataset.uci_characters()
 
-Then, we can create a train/test split as proposed on [1]:
+Then, we can create a train/test split of 80/20 respectively:
 
 .. code-block:: python
 
-   train, test = dataset.cut(60_000)
+   train, test = dataset.split(.8, random_state=SEED)
 
 .. _Loading the model 3:
 
@@ -92,6 +92,7 @@ in a list:
            bootstrap=False,
            warm_start=True,
            n_jobs=6,
+           random_state=SEED,
        ),
        KNeighborsModel(
            featurizer=featurizer,
@@ -100,9 +101,15 @@ in a list:
        DecisionTreeModel(
            featurizer=featurizer,
            max_depth=7,
+           random_state=SEED,
        ),
        SVMModel(
            featurizer=featurizer,
+           random_state=SEED,
+       ),
+       XGBoostModel(
+           featurizer=featurizer,
+           random_state=SEED,
        ),
    ]
 
@@ -115,6 +122,7 @@ since both of them can handle trajectories directly:
        loss="sparse_categorical_crossentropy",
        optimizer="rmsprop",
        metrics=["accuracy"],
+       random_state=SEED,
    )
 
    model = TransformerModel(
@@ -122,6 +130,7 @@ since both of them can handle trajectories directly:
        num_heads=4,
        num_transformer_blocks=4,
        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+       random_state=SEED,
    )
 
 .. _Training and evaluation 3:
@@ -144,7 +153,7 @@ LSTM training and evaluation can be conducted by:
 .. code-block:: python
 
    checkpoint = keras.callbacks.ModelCheckpoint(
-       "partially_trained_model_lstm_mnist_stroke.h5",
+       f"partially_trained_model_lstm_{dataset.name}.h5",
        monitor="loss",
        verbose=1,
        save_best_only=True,
@@ -159,7 +168,7 @@ Similarly, Transformer evaluation can be performed by:
 .. code-block:: python
 
    checkpoint = keras.callbacks.ModelCheckpoint(
-       "partially_trained_model_transformer_mnist_stroke.h5",
+       f"partially_trained_model_transformer_{dataset.name}.h5",
        monitor="loss",
        verbose=1,
        save_best_only=True,
@@ -173,8 +182,3 @@ Each model should output the performance results using different metrics and the
 can be fairly compared among each other since the data used for training and evaluation 
 was identical.
 
-.. _References 3:
-
-6. References
--------------
-| [1] BAE, Keywoong; LEE, Suan; LEE, Wookey. Transformer Networks for Trajectory Classification. En 2022 IEEE International Conference on Big Data and Smart Computing (BigComp). IEEE, 2022. p. 331-333.
