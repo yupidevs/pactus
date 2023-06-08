@@ -58,7 +58,7 @@ class TransformerModel(Model):
         self.mask_value = mask_value
         self.encoder: Union[LabelEncoder, None] = None
         self.labels: Union[List[Any], None] = None
-        self.dataset: Union[Dataset, None] = None
+        self.original_data: Union[Data, None] = None
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -77,7 +77,7 @@ class TransformerModel(Model):
     def train(
         self,
         data: Data,
-        dataset: Dataset,
+        original_data: Data,
         cross_validation: int = 0,
         epochs: int = 10,
         validation_split: float = 0.2,
@@ -93,7 +93,7 @@ class TransformerModel(Model):
         )
         self.encoder = None
         self.labels = data.labels
-        self.dataset = dataset
+        self.original_data = original_data
         x_train, y_train = self._get_input_data(data)
         n_classes = len(data.classes)
         input_shape = x_train.shape[1:]
@@ -170,7 +170,7 @@ class TransformerModel(Model):
     ) -> keras.Model:
         model = build_model(
             n_classes,
-            input_shape,
+            input_shape=input_shape,
             head_size=self.head_size,
             num_heads=self.num_heads,
             ff_dim=self.ff_dim,
@@ -178,7 +178,7 @@ class TransformerModel(Model):
             mlp_units=self.mlp_units,
             mlp_dropout=self.mlp_dropout,
             dropout=self.dropout,
-            mask=mask,
+            # mask=mask, # FIXME: using mask is causing input shapes issues
         )
         model.compile(
             loss=self.loss,
@@ -212,10 +212,10 @@ class TransformerModel(Model):
 
     def _extract_raw_data(self, data: Data) -> np.ndarray:
         """Extracts the raw data from the yupi trajectories"""
-        assert self.dataset is not None, "Dataset must be set"
+        assert self.original_data is not None, "Original data must be set"
 
         trajs = data.trajs
-        max_len = np.max([len(traj) for traj in self.dataset.trajs])
+        max_len = np.max([len(traj) for traj in self.original_data.trajs])
         if self.max_traj_len > 0:
             max_len = self.max_traj_len
         raw_data = [np.hstack((traj.r, np.reshape(traj.t, (-1, 1)))) for traj in trajs]
