@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import numpy as np
+import tensorflow as tf
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
@@ -39,9 +40,9 @@ class TransformerModel(Model):
         max_traj_len: int = -1,
         skip_long_trajs: bool = False,
         mask_value=cfg.MASK_VALUE,
-        name=NAME,
+        random_state: Union[int, None] = None,
     ):
-        super().__init__(name)
+        super().__init__(NAME)
         self.head_size = head_size
         self.num_heads = num_heads
         self.ff_dim = ff_dim
@@ -59,6 +60,7 @@ class TransformerModel(Model):
         self.encoder: Union[LabelEncoder, None] = None
         self.labels: Union[List[Any], None] = None
         self.original_data: Union[Data, None] = None
+        self.random_state: Union[int, None] = random_state
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -85,6 +87,13 @@ class TransformerModel(Model):
         callbacks: Union[list, None] = None,
         checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
     ):
+        if self.random_state is not None:
+            tf.keras.utils.set_random_seed(self.random_state)
+            logging.warning(
+                f"Custom seed provided for {self.name} model. This "
+                "calls 'tf.keras.utils.set_random_seed' which sets a global "
+                "random state on python, numpy and tensorflow."
+            )
         self.set_summary(
             cross_validation=cross_validation,
             epochs=epochs,

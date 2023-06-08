@@ -14,6 +14,7 @@ model = TransformerModel(
     num_heads=4,
     num_transformer_blocks=4,
     optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+    random_state=SEED,
 )
 
 # Split into train and test sets

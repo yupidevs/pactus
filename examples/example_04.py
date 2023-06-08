@@ -23,7 +23,10 @@ for dataset in datasets:
     # Split the dataset into train and test
     train, test = dataset.filter(
         lambda traj, _: len(traj) >= 5 and traj.r.delta.norm.sum() > 0
-    ).split(train_size=0.7, random_state=SEED)
+    ).split(
+        train_size=0.7,
+        random_state=SEED,
+    )
 
     # Select the desired features to be extracted from the trajectories
     featurizer = featurizers.UniversalFeaturizer()

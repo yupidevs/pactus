@@ -1,8 +1,11 @@
+import datetime
 import logging
+import time
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
 import numpy as np
+import tensorflow as tf
 from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 from yupi import Trajectory
@@ -30,6 +33,7 @@ class LSTMModel(Model):
         loss="sparse_categorical_crossentropy",
         optimizer="rmsprop",
         metrics=None,
+        random_state: Union[int, None] = None,
         **kwargs,
     ):
         super().__init__(NAME)
@@ -38,6 +42,7 @@ class LSTMModel(Model):
         self.dataset: Union[Dataset, None] = None
         self.model: keras.Secuential
         self.max_len = 0
+        self.random_state = random_state
         metrics = ["accuracy"] if metrics is None else metrics
         self.units = [128, 64] if units is None else units
         kwargs.update(dict(loss=loss, optimizer=optimizer, metrics=metrics))
@@ -111,6 +116,13 @@ class LSTMModel(Model):
         callbacks: Union[list, None] = None,
         checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
     ):
+        if self.random_state is not None:
+            tf.keras.utils.set_random_seed(self.random_state)
+            logging.warning(
+                f"Custom seed provided for {self.name} model. This "
+                "calls 'tf.keras.utils.set_random_seed' which sets a global "
+                "random state on python, numpy and tensorflow."
+            )
         if cross_validation != 0:
             logging.warning("Cross validation is not supported yet for lstm")
         self.set_summary(epochs=epochs, validation_split=validation_split)

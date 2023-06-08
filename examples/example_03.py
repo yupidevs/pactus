@@ -7,13 +7,14 @@ from pactus.models import (
     LSTMModel,
     RandomForestModel,
     SVMModel,
-    TransformerModel, # TODO: Falta XGBoost
+    TransformerModel,
+    XGBoostModel,
 )
 
-SEED = 0 # TODO: Use this for reproducibility
+SEED = 0  # Random seed for reproducibility
 
-dataset = Dataset.mnist_stroke()
-train, test = dataset.cut(60_000)
+dataset = Dataset.uci_characters()
+train, test = dataset.split(.8, random_state=SEED)
 
 featurizer = featurizers.UniversalFeaturizer()
 vectorized_models = [
@@ -24,6 +25,7 @@ vectorized_models = [
         bootstrap=False,
         warm_start=True,
         n_jobs=6,
+        random_state=SEED,
     ),
     KNeighborsModel(
         featurizer=featurizer,
@@ -32,9 +34,15 @@ vectorized_models = [
     DecisionTreeModel(
         featurizer=featurizer,
         max_depth=7,
+        random_state=SEED,
     ),
     SVMModel(
         featurizer=featurizer,
+        random_state=SEED,
+    ),
+    XGBoostModel(
+        featurizer=featurizer,
+        random_state=SEED,
     ),
 ]
 
@@ -44,12 +52,14 @@ transformer = TransformerModel(
     num_heads=4,
     num_transformer_blocks=4,
     optimizer=keras.optimizers.Adam(learning_rate=1e-4),
+    random_state=SEED,
 )
 
 lstm = LSTMModel(
     loss="sparse_categorical_crossentropy",
     optimizer="rmsprop",
     metrics=["accuracy"],
+    random_state=SEED,
 )
 
 # Train and evaluate vectorized models
@@ -61,7 +71,7 @@ for model in vectorized_models:
 
 # Train and evaluate LSTM model
 checkpoint = keras.callbacks.ModelCheckpoint(
-    "partially_trained_model_lstm_mnist_stroke.h5",
+    f"partially_trained_model_lstm_{dataset.name}.h5",
     monitor="loss",
     verbose=1,
     save_best_only=True,
@@ -73,7 +83,7 @@ evaluation.show()
 
 # Train and evaluate Transformer model
 checkpoint = keras.callbacks.ModelCheckpoint(
-    "partially_trained_model_transformer_mnist_stroke.h5",
+    f"partially_trained_model_transformer_{dataset.name}.h5",
     monitor="loss",
     verbose=1,
     save_best_only=True,
