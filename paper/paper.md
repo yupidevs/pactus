@@ -19,6 +19,18 @@ authors:
     orcid: 0000-0001-7305-4710
     equal-contrib: true
     affiliation: 3
+  - name: E. Altshuler
+    orcid: 0000-0003-4192-5635
+    equal-contrib: false
+    affiliation: 3
+  - name: Yudivián Almeida-Cruz
+    orcid: 0000-0002-2345-1387
+    equal-contrib: false
+    affiliation: 2
+  - name: Giorgio Manganini
+    orcid: 0000-0002-5394-4094
+    equal-contrib: false
+    affiliation: 1
 affiliations:
  - name: Department of Computer Science, Gran Sasso Science Institute, L'Aquila, Italy
    index: 1

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pactus's documentation!
-==================================
+Welcome to pactus' documentation!
+=================================
 
 Standing from Path Classification Tools for Unifying Strategies, `pactus`
 is a Python library that allows testing different classification methods on
@@ -19,7 +19,7 @@ extensible way, so the users can build their own models and datasets.
    :align: center
    :width: 550
    
-   *pactus capabilities represented in an example classification task.*
+   *Overview of the resources available in pactus coupled with an usage example*
 
 .. note::
    Code from the example shown above:
@@ -58,24 +58,19 @@ extensible way, so the users can build their own models and datasets.
 
 .. toctree::
    :maxdepth: 2
+   :caption: Extensibility
+  
+   extensibility/create_new_datasets
+   extensibility/create_new_models
+   extensibility/create_new_featurizers
+
+.. toctree::
+   :maxdepth: 2
    :caption: Contributing
   
    contributing/engaging
    contributing/adding_datasets
    contributing/adding_models
-   contributing/adding_featurizers
-  
-.. .. toctree::
-..    :maxdepth: 2
-..    :caption: Tutorials
-
-..    Converting data into Trajectory objects <tutorials/converting>
-..    tutorials/generating
-..    tutorials/tracking
-..    tutorials/operations
-..    tutorials/storing
-..    tutorials/analyzing
-..    tutorials/collecting
 
 .. toctree::
    :maxdepth: 2
