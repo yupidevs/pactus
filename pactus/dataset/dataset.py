@@ -332,49 +332,54 @@ class Dataset(Data):
     @staticmethod
     def geolife(redownload: bool = False) -> Dataset:
         """Loads the geolife dataset"""
-        return Dataset._from_url("geolife", force=redownload)
+        return Dataset.get("geolife", redownload=redownload)
 
     @staticmethod
     def animals(redownload: bool = False) -> Dataset:
         """Loads the animals dataset"""
-        return Dataset._from_url("animals", force=redownload)
+        return Dataset.get("animals", redownload=redownload)
 
     @staticmethod
     def mnist_stroke(redownload: bool = False) -> Dataset:
         """Loads the mnist_stroke dataset"""
-        return Dataset._from_url("mnist_stroke", force=redownload)
+        return Dataset.get("mnist_stroke", redownload=redownload)
 
     @staticmethod
     def hurdat2(redownload: bool = False) -> Dataset:
         """Loads the hurdat2 dataset"""
-        return Dataset._from_url("hurdat2", force=redownload)
+        return Dataset.get("hurdat2", redownload=redownload)
 
     @staticmethod
     def cma_bst(redownload: bool = False) -> Dataset:
         """Loads the cma_bst dataset"""
-        return Dataset._from_url("cma_bst", force=redownload)
+        return Dataset.get("cma_bst", redownload=redownload)
 
     @staticmethod
     def uci_gotrack(redownload: bool = False) -> Dataset:
         """Loads the uci_gotrack dataset"""
-        return Dataset._from_url("uci_gotrack", force=redownload)
+        return Dataset.get("uci_gotrack", redownload=redownload)
 
     @staticmethod
     def uci_movement_libras(redownload: bool = False) -> Dataset:
         """Loads the uci_movement_libras dataset"""
-        return Dataset._from_url("uci_movement_libras", force=redownload)
+        return Dataset.get("uci_movement_libras", redownload=redownload)
 
     @staticmethod
     def uci_pen_digits(redownload: bool = False) -> Dataset:
         """Loads the uci_pen_digits dataset"""
-        return Dataset._from_url("uci_pen_digits", force=redownload)
+        return Dataset.get("uci_pen_digits", redownload=redownload)
 
     @staticmethod
     def uci_characters(redownload: bool = False) -> Dataset:
         """Loads the uci_characters dataset"""
-        return Dataset._from_url("uci_characters", force=redownload)
+        return Dataset.get("uci_characters", redownload=redownload)
 
     @staticmethod
-    def stochastic_models(redownload: bool = False) -> Dataset:
-        """Loads the stochastic models dataset"""
-        return Dataset._from_url("stochastic_models", force=redownload)
+    def diffusive_particles(redownload: bool = False) -> Dataset:
+        """Loads the diffusive particles dataset"""
+        return Dataset.get("diffusive_particles", redownload=redownload)
+    
+    @staticmethod
+    def get(dataset_name: str, redownload: bool = False) -> Dataset:
+        """Loads a dataset from the trajectory-dataset repository"""
+        return Dataset._from_url(dataset_name, force=redownload)
