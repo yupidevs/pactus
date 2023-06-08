@@ -61,7 +61,6 @@ extensible way, so the users can build their own models and datasets.
    :caption: Contributing
   
    contributing/engaging
-   contributing/report_issues
    contributing/adding_datasets
    contributing/adding_models
    contributing/adding_featurizers
