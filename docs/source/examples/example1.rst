@@ -52,7 +52,7 @@ To load the original GeoLife dataset we can simply do:
    dataset = Dataset.geolife()
 
 Then, we can process it to keep only the desired classes, combine similar classes
-and create a tran/test split as proposed on [1]:
+and create a train/test split as proposed on [1]:
 
 .. code-block:: python
 

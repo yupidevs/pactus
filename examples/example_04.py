@@ -1,10 +1,9 @@
 from typing import Tuple
 
-from tensorflow import keras
 
 from pactus import Dataset, featurizers
 from pactus.dataset.dataset import Data
-from pactus.models import TransformerModel
+from pactus.models import XGBoostModel
 
 SEED = 0  # Random seed for reproducibility
 
@@ -19,7 +18,6 @@ datasets = [
     Dataset.uci_characters(),
     Dataset.uci_movement_libras(),
 ]
-
 
 def dataset_splitter(ds: Data) -> Tuple[Data, Data]:
     if ds.dataset_name == "geolife":
@@ -45,14 +43,13 @@ for dataset in datasets:
     # Split the dataset into train and test
     train, test = dataset_splitter(dataset)
 
-    # Define the model
-    model = TransformerModel(
-        head_size=512,
-        num_heads=4,
-        num_transformer_blocks=4,
-        optimizer=keras.optimizers.Adam(learning_rate=1e-4),
-    )
+    # Select the desired features to be extracted from the trajectories
+    featurizer = featurizers.UniversalFeaturizer()
 
-    model.train(train, dataset, epochs=150, batch_size=64)
+    # Define the model
+    model = XGBoostModel(featurizer=featurizer)
+
+    # Evaluate the results
+    model.train(data=train, cross_validation=5)
     evaluation = model.evaluate(test)
     evaluation.show()

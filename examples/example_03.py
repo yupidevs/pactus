@@ -7,8 +7,10 @@ from pactus.models import (
     LSTMModel,
     RandomForestModel,
     SVMModel,
-    TransformerModel,
+    TransformerModel, # TODO: Falta XGBoost
 )
+
+SEED = 0 # TODO: Use this for reproducibility
 
 dataset = Dataset.mnist_stroke()
 train, test = dataset.cut(60_000)
