@@ -23,7 +23,7 @@ model = RandomForestModel(
 # Preprocess the dataset and split it into train and test sets
 use_classes = {"car", "taxi-bus", "walk", "bike", "subway", "train"}
 train, test = (
-    # Remove short and pourly time sampled trajectories
+    # Remove short and poorly time sampled trajectories
     dataset.filter(lambda traj, _: len(traj) > 10 and traj.dt < 8)
     # Join "taxi" and "bus" into "taxi-bus"
     .map(lambda _, label: (_, "taxi-bus" if label in ("bus", "taxi") else label))
