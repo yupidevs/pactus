@@ -1,5 +1,5 @@
 ---
-title: 'pactus: A Python playground for trajectory classification'
+title: 'pactus: A Python framework for trajectory classification'
 tags:
   - trajectory classification
   - mobility data
