@@ -40,8 +40,8 @@ dataset <https://github.com/yupidevs/trajectory-datasets>`_ repository.
      - | **Huracane intensity:**
        | Weaker or unknown • Tropical Depression
        | Tropical Storm • Severe Tropical Storm
-       | Typhoon • Severe Typhoon • Super Typhoon
-       | Extratropical Cyclone
+       | Typhoon • Severe Typhoon 
+       | Super Typhoon • Extratropical Cyclone
    * - uci_gotrack
      - Cars and buses GPS trayectories
      - | **Transportation mode:**
@@ -67,9 +67,3 @@ dataset <https://github.com/yupidevs/trajectory-datasets>`_ repository.
        | horizontal zigzag • vertical zigzag 
        | horizontal wavy • vertical wavy 
        | face-up curve • face-down curve • tremble
-   * - stochastic_models
-     - | Trajectories generated
-       | using statistical models
-     - | **Model used:** 
-       | Random Walk • Langevin Ecquation 
-       | Diffusing Diffusivity 

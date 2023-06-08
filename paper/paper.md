@@ -111,8 +111,8 @@ individual access through the library.
 
 In order to mitigate the different-length trajectories on some datasets, `pactus`
 is able to extract statistical features from any trajectory and convert an arbitrary
-length trajectory into a fixed size feature vector using the procedures described in
-[@xiao2017identifying; @zheng2008understanding].
+length trajectory into a fixed size vector whose components are engineered features 
+typically used in the literature [@xiao2017identifying; @zheng2008understanding].
 
 Finally, several classification algorithms can be evaluated on the vectorized
 versions of the trajectories (e.g., Random Forest, SVM, KNN) or, alternatively,
