@@ -51,6 +51,7 @@ extensible way, so the users can build their own models and datasets.
    :maxdepth: 2
    :caption: Examples
   
+   examples/example0
    examples/example1
    examples/example2
    examples/example3
