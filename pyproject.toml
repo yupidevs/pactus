@@ -1,6 +1,6 @@
 [project]
 name = "pactus"
-version = "0.4.0"
+version = "0.4.1"
 description = "Framework to evaluate Trajectory Classification Algorithms"
 readme = "README.md"
 authors = [
@@ -58,7 +58,7 @@ target-version = ["py38"]
 max-line-length = 88
 
 [tool.bumpver]
-current_version = "0.4.0"
+current_version = "0.4.1"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
 commit = false
 tag = false
