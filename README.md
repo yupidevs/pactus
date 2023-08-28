@@ -35,17 +35,19 @@ This is quick example of how to test a Random Forest classifier on the Animals d
 from pactus import Dataset, featurizers
 from pactus.models import RandomForestModel
 
+SEED = 0
+
 # Load dataset
 dataset = Dataset.animals()
 
 # Split data into train and test subsets
-train, test = dataset.split(0.9)
+train, test = dataset.split(0.9, random_state=SEED)
 
 # Convert trajectories into feature vectors
 ft = featurizers.UniversalFeaturizer()
 
 # Build and train the model
-model = RandomForestModel(featurizer=ft)
+model = RandomForestModel(featurizer=ft, random_state=SEED)
 model.train(train, cross_validation=5)
 
 # Evaluate the results on the test subset
@@ -58,21 +60,26 @@ It should output evaluation results similar to:
 ```text
 General statistics:
 
-Accuracy: 0.962
-F1-score: 0.951
-Mean precision: 0.976
-Mean recall: 0.933
+Accuracy: 0.885
+F1-score: 0.849
+Mean precision: 0.865
+Mean recall: 0.850
 
 Confusion matrix:
 
 Cattle  Deer    Elk     precision
 ================================
-100.0   0.0     0.0     100.0   
-0.0     80.0    0.0     100.0   
-0.0     20.0    100.0   92.86   
+75.0    0.0     0.0     100.0
+25.0    80.0    0.0     66.67
+0.0     20.0    100.0   92.86
 --------------------------------
-100.0   80.0    100.0   
+75.0    80.0    100.0
 ```
+
+> ℹ️ Notice that by setting the random state to a fixed seed, we ensure the
+reproducibility of the results. By changing the seed value, results may be
+slightly different due to the stochastic processes used when splitting the
+dataset and training the model.
 
 ## Available datasets
 
