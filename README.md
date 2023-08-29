@@ -55,7 +55,7 @@ evaluation = model.evaluate(test)
 evaluation.show()
 ```
 
-It should output evaluation results similar to:
+It should produce an output as the following:
 
 ```text
 General statistics:
