@@ -1,0 +1,61 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Viera-López
+  given-names: G.
+  orcid: "https://orcid.org/0000-0002-9661-5709"
+- family-names: Morgado-Vega
+  given-names: J. J.
+  orcid: "https://orcid.org/0000-0001-6067-9172"
+- family-names: Reyes
+  given-names: A.
+  orcid: "https://orcid.org/0000-0001-7305-4710"
+- family-names: Altshuler
+  given-names: E.
+  orcid: "https://orcid.org/0000-0003-4192-5635"
+- family-names: Almeida-Cruz
+  given-names: Yudivián
+  orcid: "https://orcid.org/0000-0002-2345-1387"
+- family-names: Manganini
+  given-names: Giorgio
+  orcid: "https://orcid.org/0000-0002-5394-4094"
+contact:
+- family-names: Viera-López
+  given-names: G.
+  orcid: "https://orcid.org/0000-0002-9661-5709"
+doi: 10.5281/zenodo.8352324
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Viera-López
+    given-names: G.
+    orcid: "https://orcid.org/0000-0002-9661-5709"
+  - family-names: Morgado-Vega
+    given-names: J. J.
+    orcid: "https://orcid.org/0000-0001-6067-9172"
+  - family-names: Reyes
+    given-names: A.
+    orcid: "https://orcid.org/0000-0001-7305-4710"
+  - family-names: Altshuler
+    given-names: E.
+    orcid: "https://orcid.org/0000-0003-4192-5635"
+  - family-names: Almeida-Cruz
+    given-names: Yudivián
+    orcid: "https://orcid.org/0000-0002-2345-1387"
+  - family-names: Manganini
+    given-names: Giorgio
+    orcid: "https://orcid.org/0000-0002-5394-4094"
+  date-published: 2023-09-22
+  doi: 10.21105/joss.05738
+  issn: 2475-9066
+  issue: 89
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5738
+  title: "pactus: A Python framework for trajectory classification"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05738"
+  volume: 8
+title: "pactus: A Python framework for trajectory classification"
+
