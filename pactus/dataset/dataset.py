@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, List, Tuple, Union
 
 import numpy as np
+import requests
 from git.cmd import Git
 from sklearn.model_selection import train_test_split
 from yupi import Trajectory
@@ -85,7 +86,7 @@ class Data:
     ) -> Data:
         """
         Takes a subset of the dataset.
-        
+
         Parameters
         ----------
         size : Union[float, int]
@@ -101,7 +102,7 @@ class Data:
             by default True.
         random_state : Union[int, None], optional
             Random state to be used, by default None.
-        
+
         Returns
         -------
         Data
@@ -128,7 +129,7 @@ class Data:
             as the proportion of the dataset to be taken. If int, it should be
             between 0 and the dataset size and it will be interpreted as the
             number of trajectories to be taken.
-        
+
         Returns
         -------
         Tuple[Data, Data]
@@ -264,8 +265,6 @@ class Dataset(Data):
         Dataset version.
     """
 
-    _last_tag: Union[str, None] = None
-
     def __init__(
         self,
         name: str,
@@ -296,14 +295,15 @@ class Dataset(Data):
 
     @staticmethod
     def _get_dataset_url(name: str) -> str:
-        tag = Dataset._last_tag
-        if tag is None:
-            g_cmd = Git()
-            output = g_cmd.ls_remote(REPO_URL, sort="-v:refname", tags=True)
-            tag = output.split("\n")[0].split("/")[-1]
-            Dataset._last_tag = tag
-        assert tag is not None, "Could not find the last tag"
-        return f"{REPO_URL}/releases/download/{tag}/{name}.zip"
+        g_cmd = Git()
+        output = g_cmd.ls_remote(REPO_URL, sort="-v:refname", tags=True)
+        tags = output.split("\n")[0].split("/")[-1]
+        tags = [ref.split("/")[-1] for ref in output.split("\n")]
+        for tag in tags:
+            url = f"{REPO_URL}/releases/download/{tag}/{name}.zip"
+            if requests.head(url).status_code == 302:
+                return url
+        assert False, "Could not find the given dataset"
 
     @staticmethod
     def _from_url(name: str, force: bool = False) -> Dataset:
@@ -375,10 +375,15 @@ class Dataset(Data):
         return Dataset.get("uci_characters", redownload=redownload)
 
     @staticmethod
+    def traffic(redownload: bool = False) -> Dataset:
+        """Loads the traffic dataset"""
+        return Dataset.get("traffic", redownload=redownload)
+
+    @staticmethod
     def diffusive_particles(redownload: bool = False) -> Dataset:
         """Loads the diffusive particles dataset"""
         return Dataset.get("diffusive_particles", redownload=redownload)
-    
+
     @staticmethod
     def get(dataset_name: str, redownload: bool = False) -> Dataset:
         """Loads a dataset from the trajectory-dataset repository"""
