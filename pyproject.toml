@@ -1,95 +1,137 @@
 [project]
 name = "pactus"
-version = "0.4.3"
+version = "0.5.0-beta0"
 description = "Framework to evaluate Trajectory Classification Algorithms"
 readme = "README.md"
+requires-python = ">=3.11"
 authors = [
     { name = "Jorge Morgado Vega", email = "jorge.morgadov@gmail.com" },
     { name = "Gustavo Viera-López", email = "gvieralopez@gmail.com" },
     { name = "Alfredo Reyes", email = "areyes@fisica.uh.cu" },
 ]
-license = { file = "LICENSE" }
+license = { text = "MIT" }
+
+keywords = ["trajectory", "classification"]
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
-keywords = [
-    "trajectory",
-    "classification"
-]
+
 dependencies = [
-    "numpy >= 1.23.5",
-    "yupi >= 0.11.2",
-    "tensorflow >= 2.12.0",
-    "scikit-learn >= 1.1.1",
-    "xgboost >= 1.7.4",
-    "GitPython >= 3.1.29",
-    "requests >= 2.32.3"
-]
-requires-python = ">=3.8"
-
-[options]
-packages = [
-    { name = "pactus", include = true },
-]
-
-[project.optional-dependencies]
-dev = [
-    "mypy",
-    "black",
-    "pylint",
-    "bumpver",
-    "isort",
-    "pytest",
-    "tensor-annotations-tensorflow-stubs"
+    "numpy>=1.23.5",
+    "yupi>=1.1.0",
+    "tensorflow>=2.16.1",
+    "scikit-learn>=1.3.0",
+    "xgboost>=1.7.4",
+    "GitPython>=3.1.29",
+    "requests>=2.32.3",
 ]
 
 [project.urls]
 Homepage = "https://github.com/yupidevs/pactus"
+Documentation = "https://pactus.readthedocs.io"
 
-[tool.isort]
-profile = "black"
-known_first_party = ["pactus"]
-
-[tool.black]
-target-version = ["py38"]
-
-[tool.pylint."MESSAGES CONTROL"]
-max-line-length = 88
-
-[tool.bumpver]
-current_version = "0.4.3"
-version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
-commit = false
-tag = false
-push = false
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    'current_version = "{version}"',
-    'version = "{version}"',
+[dependency-groups]
+dev = [
+    "mypy>=2.4",
+    "pre-commit>=4.7",
+    "pytest>=9.1",
+    "pytest-cov>=7.1",
+    "pytest-env>=1.8",
+    "ruff>=0.17",
+    "ebump>=0.2.2",
 ]
-"pactus/__init__.py" = [
-    '__version__ = "{version}"',
-]
-"docs/source/conf.py" = [
-    'release = "{version}"',
-]
+
 
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+extend-exclude = [".cookie-pyrate", "docs"]  # docs/: the Sphinx site, kept as it is
+
+[tool.ruff.lint]
+select = [
+    "A",      # flake8-builtins: Check variables shadowing
+    "ARG",    # flake8-unusedarguments
+    "B",      # flake8-bugbear: Finds likely bugs and design problems
+    "C901",   # Mccabe complexity checker
+    "ERA",    # Erradicate
+    "E4",     # Pycodestyle: Line length, indentation, etc.
+    "E7",     # Pycodestyle: Miscellaneous checks
+    "E9",     # Pycodestyle: Syntax errors
+    "F",      # Pyflakes: Unused imports, undefined variables, etc.
+    "FIX",    # Avoid lines containing TODO tags
+    "G",      # flake8-logging-format: Ensure logging messages follow best practices.
+    "I",      # Isort: Import sorting
+    "LOG",    # flake8-logging: Use the logging module correctly
+    "N",      # pep8-naming: Enforce naming conventions
+    "PGH004", # Enforce specify the rule to avoid on noqa tags
+    "PL",     # Pylint
+    "PTH",    # flake8-use-pathlib: Enforces pathlib usage
+    "RUF",    # Ruff-specific rules: Mostly for handling noqa tags and general stuff
+    "S",      # flake8-bandit: Identifies common security issues in code
+    "SIM",    # flake8-simplify
+    "T20",    # flake8-print: Avoids print in the code
+    "UP",     # Pyupgrade
+    "W",      # Pycodestyle warnings
+]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ARG", "S101", "PLR2004", "PLR0913"]
+"scripts/**" = ["T20", "S603"]  # Allow print statements and subprocess calls on the scripts
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
 
 [tool.mypy]
-python_version = "3.8"
-exclude = [
-    "docs",
-]
+python_version = "3.11"
+files = ["src", "scripts", "tests"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = false
+disallow_any_generics = false
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_reexport = true
+warn_return_any = true
+extra_checks = true
 
-[[tool.mypy.overrides]]
-module = [
-    "yupi.*",
-    "sklearn.*",
-]
-ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --cov=src --cov-report=term-missing --cov-fail-under=80"
+python_files = "tests.py test_*.py *_test.py"
+pythonpath = "./src"
+env_files = [".env.test"]
+
+
+[tool.ebump.patterns]
+"src/pactus/__init__.py" = ['^__version__ = "{version}"$']
+"docs/source/conf.py" = ['^release = "{version}"$']
