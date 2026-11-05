@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier
@@ -27,7 +27,7 @@ class DecisionTreeModel(Model):
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
 
-    def predict(self, data: Data) -> List[Any]:
+    def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)
         return self.grid.predict(x_data)
 

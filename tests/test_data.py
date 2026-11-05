@@ -1,4 +1,3 @@
-from re import S
 
 import numpy as np
 import pytest
@@ -12,10 +11,7 @@ np.random.seed(42)
 
 @pytest.fixture
 def data():
-    trajs = [
-        yupi.Trajectory(x=np.random.rand(100), y=np.random.rand(100))
-        for _ in range(1000)
-    ]
+    trajs = [yupi.Trajectory(x=np.random.rand(100), y=np.random.rand(100)) for _ in range(1000)]
     labels = np.random.choice(["a", "b", "c"], size=1000)
     return Data(trajs, labels)
 
@@ -74,6 +70,7 @@ def test_data_int_split(data: Data):
     with pytest.raises(AssertionError):
         data.split(-500)
 
+
 def test_data_float_take(data: Data):
     sub_data = data.take(0.8)
     assert len(sub_data) == 800
@@ -84,6 +81,7 @@ def test_data_float_take(data: Data):
     with pytest.raises(AssertionError):
         data.take(-0.5)
 
+
 def test_data_int_take(data: Data):
     sub_data = data.take(800)
     assert len(sub_data) == 800
@@ -93,6 +91,7 @@ def test_data_int_take(data: Data):
 
     with pytest.raises(AssertionError):
         data.take(-500)
+
 
 def test_data_featurize(data: Data):
     featurizer = SpatialFeaturizer()

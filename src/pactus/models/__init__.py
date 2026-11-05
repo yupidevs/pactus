@@ -10,14 +10,14 @@ from pactus.models.transformer_model import TransformerModel
 from pactus.models.xgboost_model import XGBoostModel
 
 __all__ = [
-    "Model",
     "DecisionTreeModel",
     "Evaluation",
     "EvaluationComparison",
     "KNeighborsModel",
+    "LSTMModel",
+    "Model",
     "RandomForestModel",
     "SVMModel",
     "TransformerModel",
     "XGBoostModel",
-    "LSTMModel",
 ]

@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any
 
 import numpy as np
 import tensorflow as tf
@@ -9,7 +9,6 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow import keras
 
 import pactus.config as cfg
-from pactus import Dataset
 from pactus.dataset import Data
 from pactus.models import Model
 from pactus.models.evaluation import Evaluation
@@ -17,9 +16,7 @@ from pactus.models.transformer import TransformerBlock, build_model
 
 NAME = "transformer_model"
 DEFAULT_OPTIMIZER = keras.optimizers.Adam(learning_rate=1e-2)
-DEFAULT_CALLBACKS = [
-    keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
-]
+DEFAULT_CALLBACKS = [keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)]
 
 
 class TransformerModel(Model):
@@ -31,7 +28,7 @@ class TransformerModel(Model):
         num_heads: int = 1,
         ff_dim: int = 4,
         num_transformer_blocks: int = 2,
-        mlp_units: Union[List[int], None] = None,
+        mlp_units: list[int] | None = None,
         mlp_dropout: float = 0.4,
         dropout: float = 0.25,
         loss="categorical_crossentropy",
@@ -40,7 +37,7 @@ class TransformerModel(Model):
         max_traj_len: int = -1,
         skip_long_trajs: bool = False,
         mask_value=cfg.MASK_VALUE,
-        random_state: Union[int, None] = None,
+        random_state: int | None = None,
     ):
         super().__init__(NAME)
         self.head_size = head_size
@@ -57,10 +54,10 @@ class TransformerModel(Model):
         self.max_traj_len = max_traj_len
         self.skip_long_trajs = skip_long_trajs
         self.mask_value = mask_value
-        self.encoder: Union[LabelEncoder, None] = None
-        self.labels: Union[List[Any], None] = None
-        self.original_data: Union[Data, None] = None
-        self.random_state: Union[int, None] = random_state
+        self.encoder: LabelEncoder | None = None
+        self.labels: list[Any] | None = None
+        self.original_data: Data | None = None
+        self.random_state: int | None = random_state
         self.set_summary(
             head_size=self.head_size,
             num_heads=self.num_heads,
@@ -84,8 +81,8 @@ class TransformerModel(Model):
         epochs: int = 10,
         validation_split: float = 0.2,
         batch_size: int = 32,
-        callbacks: Union[list, None] = None,
-        checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
+        callbacks: list | None = None,
+        checkpoint: keras.callbacks.ModelCheckpoint | None = None,
     ):
         if self.random_state is not None:
             tf.keras.utils.set_random_seed(self.random_state)
@@ -116,11 +113,7 @@ class TransformerModel(Model):
 
         if cross_validation == 0:
             model = (
-                self._get_model(
-                    n_classes,
-                    input_shape,
-                    mask=self.mask_value,
-                )
+                self._get_model(n_classes, input_shape, mask=self.mask_value)
                 if model_path is None
                 else keras.models.load_model(
                     model_path, custom_objects={"TransformerBlock": TransformerBlock}
@@ -144,11 +137,7 @@ class TransformerModel(Model):
             for train_idxs, test_idxs in kfold.split(x_train, y_train):
                 x_train_fold = x_train[train_idxs]
                 y_train_fold = y_train[train_idxs]
-                model = self._get_model(
-                    n_classes,
-                    input_shape,
-                    mask=self.mask_value,
-                )
+                model = self._get_model(n_classes, input_shape, mask=self.mask_value)
                 model.fit(
                     x_train_fold,
                     y_train_fold,
@@ -170,13 +159,11 @@ class TransformerModel(Model):
                     self.model = model
                 fold_no += 1
 
-    def predict(self, data: Data) -> List[Any]:
+    def predict(self, data: Data) -> list[Any]:
         x_data, _ = self._get_input_data(data)
         return self.model.predict(x_data)
 
-    def _get_model(
-        self, n_classes: int, input_shape: tuple, mask: Any = None
-    ) -> keras.Model:
+    def _get_model(self, n_classes: int, input_shape: tuple, mask: Any = None) -> keras.Model:
         model = build_model(
             n_classes,
             input_shape=input_shape,
@@ -189,14 +176,10 @@ class TransformerModel(Model):
             dropout=self.dropout,
             # mask=mask, # FIXME: using mask is causing input shapes issues
         )
-        model.compile(
-            loss=self.loss,
-            optimizer=self.optimizer,
-            metrics=self.metrics,
-        )
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
         return model
 
-    def _get_input_data(self, data: Data) -> Tuple[np.ndarray, np.ndarray]:
+    def _get_input_data(self, data: Data) -> tuple[np.ndarray, np.ndarray]:
         """
         Process all the data and returns a x_data, y_data, mask readable
         by the transformer

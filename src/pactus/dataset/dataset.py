@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import logging
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, List, Tuple, Union
+from typing import Any
 
 import numpy as np
 import requests
@@ -37,10 +38,7 @@ class Data:
     """
 
     def __init__(
-        self,
-        trajs: List[Trajectory],
-        labels: List[Any],
-        dataset_name: str = "custom",
+        self, trajs: list[Trajectory], labels: list[Any], dataset_name: str = "custom"
     ) -> None:
         self.trajs = trajs
         self.labels = labels
@@ -50,7 +48,7 @@ class Data:
         self.dataset_name = dataset_name
 
     @property
-    def classes(self) -> List[Any]:
+    def classes(self) -> list[Any]:
         """Classes present in the dataset."""
         return list(self.label_counts.keys())
 
@@ -79,10 +77,10 @@ class Data:
 
     def take(
         self,
-        size: Union[float, int],
+        size: float | int,
         stratify: bool = True,
         shuffle: bool = True,
-        random_state: Union[int, None] = None,
+        random_state: int | None = None,
     ) -> Data:
         """
         Takes a subset of the dataset.
@@ -112,12 +110,10 @@ class Data:
             assert 0 < size < len(self), "size should be within 0 and len(self)"
             size /= len(self)
 
-        ans, _ = self.split(
-            size, stratify=stratify, shuffle=shuffle, random_state=random_state
-        )
+        ans, _ = self.split(size, stratify=stratify, shuffle=shuffle, random_state=random_state)
         return ans
 
-    def cut(self, size: Union[float, int]) -> Tuple[Data, Data]:
+    def cut(self, size: float | int) -> tuple[Data, Data]:
         """
         Similar to split, but without shuffle, stratify, etc. Just slices the
         dataset into two parts.
@@ -140,9 +136,7 @@ class Data:
             assert 0 < size < 1, "size should be within 0 and 1 if float"
             size = int(len(self) * size)
         else:
-            assert (
-                0 < size < len(self)
-            ), "size should be within 0 and the dataset size if int"
+            assert 0 < size < len(self), "size should be within 0 and the dataset size if int"
 
         left, right = self.trajs[:size], self.trajs[size:]
         left_labels, right_labels = self.labels[:size], self.labels[size:]
@@ -152,11 +146,11 @@ class Data:
 
     def split(
         self,
-        train_size: Union[float, int] = 0.8,
+        train_size: float | int = 0.8,
         stratify: bool = True,
         shuffle: bool = True,
-        random_state: Union[int, None] = None,
-    ) -> Tuple[Data, Data]:
+        random_state: int | None = None,
+    ) -> tuple[Data, Data]:
         """
         Splits the dataset into train and test dataset slices.
 
@@ -182,9 +176,9 @@ class Data:
             A tuple with the train and test Data objects.
         """
         if isinstance(train_size, int):
-            assert (
-                0 < train_size < len(self)
-            ), "train_size should be within 0 and the dataset size if int"
+            assert 0 < train_size < len(self), (
+                "train_size should be within 0 and the dataset size if int"
+            )
             train_size /= len(self)
         else:
             assert 0 < train_size < 1, "train_size should be within 0 and 1 if float"
@@ -202,7 +196,7 @@ class Data:
         test_data = Data(x_test, y_test)
         return train_data, test_data
 
-    def map(self, func: Callable[[Trajectory, Any], Tuple[Trajectory, Any]]) -> Data:
+    def map(self, func: Callable[[Trajectory, Any], tuple[Trajectory, Any]]) -> Data:
         """
         Applies a function to each trajectory and label pair.
 
@@ -265,13 +259,7 @@ class Dataset(Data):
         Dataset version.
     """
 
-    def __init__(
-        self,
-        name: str,
-        trajs: List[Trajectory],
-        labels: List[Any],
-        version: int = 0,
-    ):
+    def __init__(self, name: str, trajs: list[Trajectory], labels: list[Any], version: int = 0):
         self.name = name
         self.version = version
         self.trajs = trajs
@@ -287,10 +275,7 @@ class Dataset(Data):
         assert "labels" in data, "labels not found in dataset"
         trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
         return Dataset(
-            name=name,
-            trajs=trajs,
-            labels=data["labels"],
-            version=data.get("version", 0),
+            name=name, trajs=trajs, labels=data["labels"], version=data.get("version", 0)
         )
 
     @staticmethod
@@ -312,7 +297,7 @@ class Dataset(Data):
         yupi_data_file = raw_dir / f"{name}.json"
 
         if not force and yupi_data_file.exists():
-            with open(yupi_data_file, "r", encoding="utf-8") as yupi_fd:
+            with open(yupi_data_file, encoding="utf-8") as yupi_fd:
                 data = json.load(yupi_fd)
                 if "trajs" in data and "labels" in data:
                     return Dataset._from_json(name, data)
@@ -322,10 +307,10 @@ class Dataset(Data):
         return Dataset.from_file(yupi_data_file, name)
 
     @staticmethod
-    def from_file(path: Union[Path, str], name: str) -> Dataset:
+    def from_file(path: Path | str, name: str) -> Dataset:
         """Loads a dataset from a file."""
         _path = path if isinstance(path, Path) else Path(path)
-        with open(_path, "r", encoding="utf-8") as yupi_fd:
+        with open(_path, encoding="utf-8") as yupi_fd:
             data = json.load(yupi_fd)
             return Dataset._from_json(name, data)
 

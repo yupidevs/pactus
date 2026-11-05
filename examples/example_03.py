@@ -14,7 +14,7 @@ from pactus.models import (
 SEED = 0  # Random seed for reproducibility
 
 dataset = Dataset.uci_characters()
-train, test = dataset.split(.8, random_state=SEED)
+train, test = dataset.split(0.8, random_state=SEED)
 
 featurizer = featurizers.UniversalFeaturizer()
 vectorized_models = [
@@ -27,23 +27,10 @@ vectorized_models = [
         n_jobs=6,
         random_state=SEED,
     ),
-    KNeighborsModel(
-        featurizer=featurizer,
-        n_neighbors=7,
-    ),
-    DecisionTreeModel(
-        featurizer=featurizer,
-        max_depth=7,
-        random_state=SEED,
-    ),
-    SVMModel(
-        featurizer=featurizer,
-        random_state=SEED,
-    ),
-    XGBoostModel(
-        featurizer=featurizer,
-        random_state=SEED,
-    ),
+    KNeighborsModel(featurizer=featurizer, n_neighbors=7),
+    DecisionTreeModel(featurizer=featurizer, max_depth=7, random_state=SEED),
+    SVMModel(featurizer=featurizer, random_state=SEED),
+    XGBoostModel(featurizer=featurizer, random_state=SEED),
 ]
 
 

@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
@@ -20,7 +20,7 @@ class XGBoostModel(Model):
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = XGBClassifier(**kwargs)
-        self.encoder: Union[LabelEncoder, None] = None
+        self.encoder: LabelEncoder | None = None
         self.grid: GridSearchCV
         self.set_summary(**kwargs)
 
@@ -40,7 +40,7 @@ class XGBoostModel(Model):
         classes = self._encode_labels(data)
         self.grid.fit(x_data, classes)
 
-    def predict(self, data: Data) -> List[Any]:
+    def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)
         predicted = self.grid.predict(x_data)
         assert self.encoder is not None

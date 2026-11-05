@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import Any
 
 from pactus.dataset import Data
 from pactus.models.evaluation import Evaluation
@@ -34,7 +34,7 @@ class Model(ABC):
         """Train the model using a given dataset"""
 
     @abstractmethod
-    def predict(self, data: Data) -> List[Any]:
+    def predict(self, data: Data) -> list[Any]:
         """Predict the labels of a given set of trajectories"""
 
     def set_summary(self, **summary):
@@ -45,7 +45,7 @@ class Model(ABC):
         """Save the model to a given path"""
         raise NotImplementedError
 
-    def _predict(self, data: Data) -> List[Any]:
+    def _predict(self, data: Data) -> list[Any]:
         # TODO: check mark trained decorator
         # if not self.trained:
         #     raise Exception("Model is not trained yet.")

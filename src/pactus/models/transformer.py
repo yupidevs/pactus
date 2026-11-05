@@ -4,9 +4,7 @@ from tensorflow.keras import layers
 
 
 class TransformerBlock(layers.Layer):
-    def __init__(
-        self, head_size, num_heads, ff_dim, ff_dim2, *args, rate=0.1, **kwargs
-    ):
+    def __init__(self, head_size, num_heads, ff_dim, ff_dim2, *args, rate=0.1, **kwargs):
         super().__init__(*args, **kwargs)
         self.head_size = head_size
         self.num_heads = num_heads
@@ -29,9 +27,7 @@ class TransformerBlock(layers.Layer):
             padding_mask = tf.cast(mask[:, tf.newaxis, tf.newaxis, :], dtype="int32")
 
         out_norm1 = self.layernorm1(inputs, training=training)
-        out_att = self.att(
-            out_norm1, out_norm1, training=training, attention_mask=padding_mask
-        )
+        out_att = self.att(out_norm1, out_norm1, training=training, attention_mask=padding_mask)
         out_drop1 = self.dropout1(out_att, training=training)
         res = out_drop1 + inputs
         out_norm2 = self.layernorm2(res, training=training)
@@ -71,13 +67,7 @@ def build_model(
     if mask is not None:
         _x = layers.Masking(mask_value=mask)(_x)
     for _ in range(num_transformer_blocks):
-        _x = TransformerBlock(
-            head_size,
-            num_heads,
-            ff_dim,
-            inputs.shape[-1],
-            rate=dropout,
-        )(_x)
+        _x = TransformerBlock(head_size, num_heads, ff_dim, inputs.shape[-1], rate=dropout)(_x)
 
     _x = layers.GlobalAveragePooling2D(data_format="channels_first")(_x)
     for dim in mlp_units:

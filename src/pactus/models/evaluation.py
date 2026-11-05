@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from string import Template
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 from sklearn.metrics import (
@@ -13,9 +13,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 
-from pactus import config
 from pactus.dataset import Data
-from pactus.dataset._utils import _get_path
 
 MAIN_SEP = "="
 SUB_SEP = "-"
@@ -51,12 +49,7 @@ $cls_rows            \midrule
 
 class Evaluation:
     def __init__(
-        self,
-        dataset_name: str,
-        trajs_ids: List[str],
-        y_true,
-        y_pred,
-        model_summary: dict,
+        self, dataset_name: str, trajs_ids: list[str], y_true, y_pred, model_summary: dict
     ):
         self.dataset_name = dataset_name
         self.traj_ids = trajs_ids
@@ -66,9 +59,7 @@ class Evaluation:
         self.classes = list(set(self.y_true))
         self.classes.sort()
 
-        self._confusion_matrix = confusion_matrix(
-            self.y_true, self.y_pred, labels=self.classes
-        ).T
+        self._confusion_matrix = confusion_matrix(self.y_true, self.y_pred, labels=self.classes).T
         pre, rec, f_sc, sup = precision_recall_fscore_support(
             self.y_true, self.y_pred, labels=self.classes, zero_division=0
         )
@@ -78,16 +69,10 @@ class Evaluation:
         self.support = np.asarray(sup)
 
         self.acc_overall = accuracy_score(self.y_true, self.y_pred, normalize=True)
-        self.f1_score = f1_score(
-            self.y_true, self.y_pred, average="macro", zero_division=0
-        )
+        self.f1_score = f1_score(self.y_true, self.y_pred, average="macro", zero_division=0)
 
     @staticmethod
-    def from_data(
-        data: Data,
-        predictions: List[Any],
-        model_summary: dict,
-    ) -> Evaluation:
+    def from_data(data: Data, predictions: list[Any], model_summary: dict) -> Evaluation:
         return Evaluation(
             dataset_name=data.dataset_name,
             trajs_ids=[traj.traj_id for traj in data.trajs if traj.traj_id is not None],
@@ -118,10 +103,7 @@ class Evaluation:
             row = np.append(row, self.precision[i])
             print(*[f"{round(c * 100, 2):<{col_width}}" for c in row], sep="")
         print(SUB_SEP * col_width * (len(classes)))
-        print(
-            *[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall],
-            sep="",
-        )
+        print(*[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall], sep="")
 
     def show(self):
         """Show the evaluation results."""
@@ -155,7 +137,7 @@ class Evaluation:
         if not file_name.endswith(".json"):
             raise ValueError("file_name extension must be '.json'")
 
-        with open(file_name, "r", encoding="utf-8") as data_fd:
+        with open(file_name, encoding="utf-8") as data_fd:
             data = json.load(data_fd)
 
         assert len(data["indices"]) == len(data["y_pred"])
@@ -218,11 +200,7 @@ class Evaluation:
 
         c_matrix = self._conf_matrix_perc()
 
-        head = (
-            "| Predicted \\ Actual | "
-            + " | ".join(map(str, self.classes))
-            + " | Precision |\n"
-        )
+        head = "| Predicted \\ Actual | " + " | ".join(map(str, self.classes)) + " | Precision |\n"
         sep = "| :--: | " + " | ".join([":--:" for _ in self.classes]) + " | :--: |\n"
         body = ""
         for i, row in enumerate(c_matrix):
@@ -231,9 +209,7 @@ class Evaluation:
             str_row[i] = f"**{str_row[i]}**"
             body += f"| **{self.classes[i]}** | " + " | ".join(str_row) + " |\n"
         recall = (
-            "| **Recall** | "
-            + " | ".join([str(round(rc * 100, 2)) for rc in self.recall])
-            + " |\n"
+            "| **Recall** | " + " | ".join([str(round(rc * 100, 2)) for rc in self.recall]) + " |\n"
         )
         ans += head + sep + body + recall
         return ans
@@ -248,12 +224,12 @@ class Evaluation:
         classes = [cls.replace("_", "\\_") for cls in self.classes]
 
         for i, row in enumerate(c_matrix):
-            str_row = [f"{str(round(c * 100, 2))} \\%" for c in row]
+            str_row = [f"{round(c * 100, 2)!s} \\%" for c in row]
             str_row[i] = r"\textbf{" + str_row[i] + "}"
             row = LATEX_CM_ROW_TEMPLATE.substitute(
                 cls_name=classes[i],
                 cls_vals=" & ".join(str_row),
-                cls_prec=f"{str(round(self.precision[i] * 100, 2))} \\%",
+                cls_prec=f"{round(self.precision[i] * 100, 2)!s} \\%",
             )
             cls_rows += row
 
@@ -265,8 +241,6 @@ class Evaluation:
             cls_count=len(classes),
             cls_head=" & ".join(classes),
             cls_rows=cls_rows,
-            recalls=" & ".join(
-                [f"{str(round(rc * 100, 2))} \\%" for rc in self.recall]
-            ),
+            recalls=" & ".join([f"{round(rc * 100, 2)!s} \\%" for rc in self.recall]),
         )
         return ans

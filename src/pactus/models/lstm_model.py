@@ -1,8 +1,6 @@
-import datetime
 import logging
-import time
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any
 
 import numpy as np
 import tensorflow as tf
@@ -18,9 +16,7 @@ from pactus.models.model import Model
 
 NAME = "lstm"
 
-DEFAULT_CALLBACKS = [
-    keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
-]
+DEFAULT_CALLBACKS = [keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)]
 
 
 class LSTMModel(Model):
@@ -28,18 +24,18 @@ class LSTMModel(Model):
 
     def __init__(
         self,
-        units: Union[List[int], None] = None,
-        masking_value: Union[int, None] = None,
+        units: list[int] | None = None,
+        masking_value: int | None = None,
         loss="sparse_categorical_crossentropy",
         optimizer="rmsprop",
         metrics=None,
-        random_state: Union[int, None] = None,
+        random_state: int | None = None,
         **kwargs,
     ):
         super().__init__(NAME)
         self.masking_value = cfg.MASK_VALUE if masking_value is None else masking_value
-        self.encoder: Union[LabelEncoder, None] = None
-        self.dataset: Union[Dataset, None] = None
+        self.encoder: LabelEncoder | None = None
+        self.dataset: Dataset | None = None
         self.model: keras.Secuential
         self.max_len = 0
         self.random_state = random_state
@@ -49,7 +45,7 @@ class LSTMModel(Model):
         self.compile_args = kwargs
         self.set_summary(**self.compile_args)
 
-    def _get_x_data(self, max_len: int, trajs: List[Trajectory]) -> np.ndarray:
+    def _get_x_data(self, max_len: int, trajs: list[Trajectory]) -> np.ndarray:
         _X = np.empty(
             (
                 len(trajs),
@@ -69,23 +65,15 @@ class LSTMModel(Model):
         max_len, traj_dim = input_shape
         model = keras.Sequential()
         model.add(
-            keras.layers.Masking(
-                mask_value=self.masking_value,
-                input_shape=(max_len, traj_dim),
-            )
+            keras.layers.Masking(mask_value=self.masking_value, input_shape=(max_len, traj_dim))
         )
         for units_val in self.units:
             model.add(
-                keras.layers.LSTM(
-                    units_val,
-                    input_shape=(max_len, traj_dim),
-                    return_sequences=True,
-                )
+                keras.layers.LSTM(units_val, input_shape=(max_len, traj_dim), return_sequences=True)
             )
         model.add(
             keras.layers.Bidirectional(
-                keras.layers.LSTM(32, input_shape=(max_len, traj_dim)),
-                merge_mode="ave",
+                keras.layers.LSTM(32, input_shape=(max_len, traj_dim)), merge_mode="ave"
             )
         )
         model.add(keras.layers.Dense(15, activation="relu"))
@@ -93,7 +81,7 @@ class LSTMModel(Model):
         model.compile(**self.compile_args)
         return model
 
-    def _prepare_data(self, data: Data) -> Tuple[np.ndarray, np.ndarray]:
+    def _prepare_data(self, data: Data) -> tuple[np.ndarray, np.ndarray]:
         assert self.dataset is not None, "Dataset is not set"
 
         self.encoder = LabelEncoder()
@@ -113,8 +101,8 @@ class LSTMModel(Model):
         epochs=10,
         batch_size=None,
         validation_split=None,
-        callbacks: Union[list, None] = None,
-        checkpoint: Union[keras.callbacks.ModelCheckpoint, None] = None,
+        callbacks: list | None = None,
+        checkpoint: keras.callbacks.ModelCheckpoint | None = None,
     ):
         if self.random_state is not None:
             tf.keras.utils.set_random_seed(self.random_state)
@@ -155,7 +143,7 @@ class LSTMModel(Model):
             callbacks=callbacks,
         )
 
-    def predict(self, data: Data) -> List[Any]:
+    def predict(self, data: Data) -> list[Any]:
         x_data = self._get_x_data(self.max_len, data.trajs)
         return self.model.predict(x_data)
 

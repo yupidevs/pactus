@@ -1,5 +1,4 @@
 from string import Template
-from typing import Any, Dict, List
 
 from pactus.models.evaluation import Evaluation
 
@@ -33,22 +32,18 @@ $rows
 
 
 class EvaluationComparison:
-    def __init__(self, evals: List[Evaluation]):
+    def __init__(self, evals: list[Evaluation]):
         self.evals = evals
 
-        self.evals_by_model: Dict[str, List[Evaluation]] = {}
+        self.evals_by_model: dict[str, list[Evaluation]] = {}
         for evaluation in self.evals:
             model = evaluation.model_summary["name"]
-            self.evals_by_model[model] = self.evals_by_model.get(model, []) + [
-                evaluation
-            ]
+            self.evals_by_model[model] = self.evals_by_model.get(model, []) + [evaluation]
 
-        self.evals_by_dataset: Dict[str, List[Evaluation]] = {}
+        self.evals_by_dataset: dict[str, list[Evaluation]] = {}
         for evaluation in self.evals:
             ds_name = evaluation.dataset_name
-            self.evals_by_dataset[ds_name] = self.evals_by_dataset.get(ds_name, []) + [
-                evaluation
-            ]
+            self.evals_by_dataset[ds_name] = self.evals_by_dataset.get(ds_name, []) + [evaluation]
 
     def to_latex(self) -> str:
         rows = []
@@ -57,12 +52,8 @@ class EvaluationComparison:
             rows.append(
                 LATEX_EVAL_ROW_TEMPLATE.substitute(
                     model_name=model_name,
-                    acc_vals=" & ".join(
-                        [f"{e.acc_overall:.2f}\\%" for e in evaluations]
-                    ),
-                    f_score_vals=" & ".join(
-                        [f"{e.f1_score:.2f}\\%" for e in evaluations]
-                    ),
+                    acc_vals=" & ".join([f"{e.acc_overall:.2f}\\%" for e in evaluations]),
+                    f_score_vals=" & ".join([f"{e.f1_score:.2f}\\%" for e in evaluations]),
                 )
             )
         ds_names = [ds.replace("_", " ").title() for ds in self.evals_by_dataset]
