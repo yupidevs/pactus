@@ -17,11 +17,11 @@ class TransformerBlock(layers.Layer):
         self.layernorm2 = layers.LayerNormalization(epsilon=1e-6)
         self.dropout1 = layers.Dropout(rate)
         self.dropout2 = layers.Dropout(rate)
-        self.conv1 = layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")
-        self.conv2 = layers.Conv1D(filters=ff_dim2, kernel_size=1)
+        self.conv1 = layers.Conv2D(filters=ff_dim, kernel_size=1, activation="relu")
+        self.conv2 = layers.Conv2D(filters=ff_dim2, kernel_size=1)
         self.supports_masking = True
 
-    def call(self, inputs, training, mask=None):
+    def call(self, inputs, training=None, mask=None):
         padding_mask = None
         if mask is not None:
             padding_mask = tf.cast(mask[:, tf.newaxis, tf.newaxis, :], dtype="int32")
