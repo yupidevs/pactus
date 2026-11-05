@@ -16,7 +16,7 @@ NAME = "xgboost"
 class XGBoostModel(Model):
     """Implementation of a XGBoost Classifier."""
 
-    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs: Any) -> None:
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = XGBClassifier(**kwargs)
@@ -29,11 +29,10 @@ class XGBoostModel(Model):
         if self.encoder is None:
             self.encoder = LabelEncoder()
             self.encoder.fit(data.labels)
-        encoded_labels = self.encoder.transform(data.labels)
-        assert isinstance(encoded_labels, np.ndarray)
+        encoded_labels: np.ndarray = self.encoder.transform(data.labels)
         return encoded_labels
 
-    def train(self, data: Data, cross_validation: int = 0):
+    def train(self, data: Data, cross_validation: int = 0) -> None:
         self.set_summary(cross_validation=cross_validation)
         x_data = data.featurize(self.featurizer)
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
@@ -43,8 +42,10 @@ class XGBoostModel(Model):
     def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)
         predicted = self.grid.predict(x_data)
-        assert self.encoder is not None
-        return self.encoder.inverse_transform(predicted)
+        if self.encoder is None:
+            raise ValueError("The model has not been trained")
+        labels: list[Any] = self.encoder.inverse_transform(predicted)
+        return labels
 
     def predict_single(self, traj: Trajectory) -> Any:
         """Predicts the label of a single trajectory."""

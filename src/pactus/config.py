@@ -9,17 +9,12 @@ from pathlib import Path
 # Download configs
 # -----------------------------------------------------------------------------
 DOWNLOAD_CHUNCK_SIZE = 4096
+DOWNLOAD_TIMEOUT_SECONDS = 60
 PROGRESS_BAR_LENGTH = 50
 
 # -----------------------------------------------------------------------------
 # Dataset configs
 # -----------------------------------------------------------------------------
-#
-# Dataset structure:
-#  src
-#  └── datasets
-#      └── [dataset_name]
-#          └── data
 #
 CACHE_PATH = os.environ.get("PACTUS_CACHE_PATH", str(Path(__file__).parent / ".cache"))
 DS_BASE_DIR = CACHE_PATH + "/datasets"

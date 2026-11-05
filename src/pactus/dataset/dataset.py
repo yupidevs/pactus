@@ -4,6 +4,7 @@ import json
 import logging
 from collections import Counter
 from collections.abc import Callable
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,8 @@ from yupi.core.featurizers import Featurizer
 
 from pactus import config
 from pactus.dataset._utils import _get_path, download_dataset
+
+logger = logging.getLogger(__name__)
 
 REPO_URL = "https://github.com/yupidevs/trajectory-datasets"
 
@@ -43,8 +46,8 @@ class Data:
         self.trajs = trajs
         self.labels = labels
         self.label_counts = Counter(labels)
-        self.feats = None
-        self.last_featurizer = None
+        self.feats: np.ndarray | None = None
+        self.last_featurizer: Featurizer | None = None
         self.dataset_name = dataset_name
 
     @property
@@ -72,7 +75,6 @@ class Data:
         if self.feats is None or self.last_featurizer != featurizer:
             self.last_featurizer = featurizer
             self.feats = featurizer.featurize(self.trajs)
-        assert self.feats is not None
         return self.feats
 
     def take(
@@ -107,7 +109,8 @@ class Data:
             A new Data object with the subset of the dataset.
         """
         if isinstance(size, int):
-            assert 0 < size < len(self), "size should be within 0 and len(self)"
+            if not (0 < size < len(self)):
+                raise ValueError("size should be within 0 and len(self)")
             size /= len(self)
 
         ans, _ = self.split(size, stratify=stratify, shuffle=shuffle, random_state=random_state)
@@ -133,10 +136,11 @@ class Data:
             of the cut and the second one with the second part.
         """
         if isinstance(size, float):
-            assert 0 < size < 1, "size should be within 0 and 1 if float"
+            if not (0 < size < 1):
+                raise ValueError("size should be within 0 and 1 if float")
             size = int(len(self) * size)
-        else:
-            assert 0 < size < len(self), "size should be within 0 and the dataset size if int"
+        elif not (0 < size < len(self)):
+            raise ValueError("size should be within 0 and the dataset size if int")
 
         left, right = self.trajs[:size], self.trajs[size:]
         left_labels, right_labels = self.labels[:size], self.labels[size:]
@@ -176,12 +180,11 @@ class Data:
             A tuple with the train and test Data objects.
         """
         if isinstance(train_size, int):
-            assert 0 < train_size < len(self), (
-                "train_size should be within 0 and the dataset size if int"
-            )
+            if not 0 < train_size < len(self):
+                raise ValueError("train_size should be within 0 and the dataset size if int")
             train_size /= len(self)
-        else:
-            assert 0 < train_size < 1, "train_size should be within 0 and 1 if float"
+        elif not (0 < train_size < 1):
+            raise ValueError("train_size should be within 0 and 1 if float")
 
         x_train, x_test, y_train, y_test = train_test_split(
             self.trajs,
@@ -214,10 +217,10 @@ class Data:
             A new Data object with the results of the function.
         """
         trajs, labels = [], []
-        for traj, label in zip(self.trajs, self.labels):
-            traj, label = func(traj, label)
-            trajs.append(traj)
-            labels.append(label)
+        for traj, label in zip(self.trajs, self.labels, strict=True):
+            new_traj, new_label = func(traj, label)
+            trajs.append(new_traj)
+            labels.append(new_label)
         return Data(trajs, labels)
 
     def filter(self, func: Callable[[Trajectory, Any], bool]) -> Data:
@@ -235,11 +238,11 @@ class Data:
             A new Data object with the filtered trajectories and labels.
         """
         trajs, labels = [], []
-        for traj, label in zip(self.trajs, self.labels):
+        for traj, label in zip(self.trajs, self.labels, strict=True):
             if func(traj, label):
                 trajs.append(traj)
                 labels.append(label)
-        logging.info("Filtered %d of %d trajectories", len(trajs), len(self))
+        logger.info("Filtered %d of %d trajectories", len(trajs), len(self))
         return Data(trajs, labels)
 
 
@@ -266,13 +269,15 @@ class Dataset(Data):
         self.labels = labels
         super().__init__(trajs, labels, dataset_name=name)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.trajs)
 
     @staticmethod
     def _from_json(name: str, data: dict) -> Dataset:
-        assert "trajs" in data, "trajs not found in dataset"
-        assert "labels" in data, "labels not found in dataset"
+        if "trajs" not in data:
+            raise ValueError("trajs not found in dataset")
+        if "labels" not in data:
+            raise ValueError("labels not found in dataset")
         trajs = [JSONSerializer.from_json(traj) for traj in data["trajs"]]
         return Dataset(
             name=name, trajs=trajs, labels=data["labels"], version=data.get("version", 0)
@@ -281,14 +286,16 @@ class Dataset(Data):
     @staticmethod
     def _get_dataset_url(name: str) -> str:
         g_cmd = Git()
-        output = g_cmd.ls_remote(REPO_URL, sort="-v:refname", tags=True)
-        tags = output.split("\n")[0].split("/")[-1]
+        output = str(g_cmd.ls_remote(REPO_URL, sort="-v:refname", tags=True))
         tags = [ref.split("/")[-1] for ref in output.split("\n")]
         for tag in tags:
             url = f"{REPO_URL}/releases/download/{tag}/{name}.zip"
-            if requests.head(url).status_code == 302:
+            if (
+                requests.head(url, timeout=config.DOWNLOAD_TIMEOUT_SECONDS).status_code
+                == HTTPStatus.FOUND
+            ):
                 return url
-        assert False, "Could not find the given dataset"
+        raise ValueError(f"Could not find the dataset {name}")
 
     @staticmethod
     def _from_url(name: str, force: bool = False) -> Dataset:
@@ -297,11 +304,11 @@ class Dataset(Data):
         yupi_data_file = raw_dir / f"{name}.json"
 
         if not force and yupi_data_file.exists():
-            with open(yupi_data_file, encoding="utf-8") as yupi_fd:
+            with yupi_data_file.open(encoding="utf-8") as yupi_fd:
                 data = json.load(yupi_fd)
                 if "trajs" in data and "labels" in data:
                     return Dataset._from_json(name, data)
-            logging.warning("Invalid dataset file, downloading again")
+            logger.warning("Invalid dataset file, downloading again")
 
         download_dataset(url, name)
         return Dataset.from_file(yupi_data_file, name)
@@ -310,7 +317,7 @@ class Dataset(Data):
     def from_file(path: Path | str, name: str) -> Dataset:
         """Loads a dataset from a file."""
         _path = path if isinstance(path, Path) else Path(path)
-        with open(_path, encoding="utf-8") as yupi_fd:
+        with _path.open(encoding="utf-8") as yupi_fd:
             data = json.load(yupi_fd)
             return Dataset._from_json(name, data)
 

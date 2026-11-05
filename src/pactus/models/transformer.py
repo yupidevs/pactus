@@ -1,10 +1,21 @@
+from typing import Any
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
 
-class TransformerBlock(layers.Layer):
-    def __init__(self, head_size, num_heads, ff_dim, ff_dim2, *args, rate=0.1, **kwargs):
+class TransformerBlock(layers.Layer):  # type: ignore[misc]
+    def __init__(
+        self,
+        head_size: int,
+        num_heads: int,
+        ff_dim: int,
+        ff_dim2: int,
+        *args: Any,
+        rate: float = 0.1,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.head_size = head_size
         self.num_heads = num_heads
@@ -21,7 +32,7 @@ class TransformerBlock(layers.Layer):
         self.conv2 = layers.Conv2D(filters=ff_dim2, kernel_size=1)
         self.supports_masking = True
 
-    def call(self, inputs, training=None, mask=None):
+    def call(self, inputs: Any, training: Any = None, mask: Any = None) -> Any:
         padding_mask = None
         if mask is not None:
             padding_mask = tf.cast(mask[:, tf.newaxis, tf.newaxis, :], dtype="int32")
@@ -36,7 +47,7 @@ class TransformerBlock(layers.Layer):
         out_conv2 = self.conv2(out_drop2, training=training)
         return out_conv2 + res
 
-    def get_config(self):
+    def get_config(self) -> dict[str, Any]:
         config = super().get_config()
         config.update(
             {
@@ -47,20 +58,21 @@ class TransformerBlock(layers.Layer):
                 "rate": self.rate,
             }
         )
-        return config
+        full_config: dict[str, Any] = config
+        return full_config
 
 
 def build_model(
-    n_classes,
-    input_shape,
-    head_size,
-    num_heads,
-    ff_dim,
-    num_transformer_blocks,
-    mlp_units,
-    dropout=0.0,
-    mlp_dropout=0.0,
-    mask=None,
+    n_classes: int,
+    input_shape: tuple,
+    head_size: int,
+    num_heads: int,
+    ff_dim: int,
+    num_transformer_blocks: int,
+    mlp_units: list[int],
+    dropout: float = 0.0,
+    mlp_dropout: float = 0.0,
+    mask: Any = None,
 ) -> keras.Model:
     inputs = keras.Input(shape=input_shape)
     _x = inputs

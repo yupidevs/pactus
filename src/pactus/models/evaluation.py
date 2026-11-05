@@ -49,8 +49,8 @@ $cls_rows            \midrule
 
 class Evaluation:
     def __init__(
-        self, dataset_name: str, trajs_ids: list[str], y_true, y_pred, model_summary: dict
-    ):
+        self, dataset_name: str, trajs_ids: list[str], y_true: Any, y_pred: Any, model_summary: dict
+    ) -> None:
         self.dataset_name = dataset_name
         self.traj_ids = trajs_ids
         self.y_true = y_true if not isinstance(y_true, np.ndarray) else y_true.tolist()
@@ -85,32 +85,33 @@ class Evaluation:
         c_matrix = self._confusion_matrix.astype("float")
         for i in range(c_matrix.shape[0]):
             c_matrix[:, i] /= c_matrix[:, i].sum()
-        return c_matrix
+        perc_matrix: np.ndarray = c_matrix
+        return perc_matrix
 
-    def _show_confusion_matrix(self):
+    def _show_confusion_matrix(self) -> None:
         """Show the confusion matrix."""
         print("\nConfusion matrix:\n")
 
         # Normalize the confusion matrix by columns
         c_matrix = self._conf_matrix_perc()
 
-        classes = list(self.classes) + ["precision"]
-        col_width = max(5, max(map(len, map(str, classes[:-1])))) + 2
+        classes = [*self.classes, "precision"]
+        col_width = max(5, *map(len, map(str, classes[:-1]))) + 2
 
         print(*[f"{c:<{col_width}}".format() for c in classes], sep="")
         print(MAIN_SEP * col_width * (len(classes)))
         for i, row in enumerate(c_matrix):
-            row = np.append(row, self.precision[i])
-            print(*[f"{round(c * 100, 2):<{col_width}}" for c in row], sep="")
+            values = np.append(row, self.precision[i])
+            print(*[f"{round(c * 100, 2):<{col_width}}" for c in values], sep="")
         print(SUB_SEP * col_width * (len(classes)))
         print(*[f"{round(rc * 100, 2):<{col_width}}" for rc in self.recall], sep="")
 
-    def show(self):
+    def show(self) -> None:
         """Show the evaluation results."""
         self._show_general_stats()
         self._show_confusion_matrix()
 
-    def _show_general_stats(self):
+    def _show_general_stats(self) -> None:
         """Show the general statistics."""
         print("\nGeneral statistics:\n")
         print(f"Accuracy: {self.acc_overall:.3f}")
@@ -137,10 +138,11 @@ class Evaluation:
         if not file_name.endswith(".json"):
             raise ValueError("file_name extension must be '.json'")
 
-        with open(file_name, encoding="utf-8") as data_fd:
+        with Path(file_name).open(encoding="utf-8") as data_fd:
             data = json.load(data_fd)
 
-        assert len(data["indices"]) == len(data["y_pred"])
+        if len(data["indices"]) != len(data["y_pred"]):
+            raise ValueError("Each prediction needs a trajectory id")
         ds_name = data["dataset_name"]
         indices = data["indices"]
         y_pred = data["y_pred"]
@@ -154,7 +156,7 @@ class Evaluation:
             model_summary=summary,
         )
 
-    def save(self, file_name: str):
+    def save(self, file_name: str) -> None:
         """Save the evaluation to a file.
 
         Parameters
@@ -176,14 +178,15 @@ class Evaluation:
             "model_summary": self.model_summary,
         }
 
-        assert len(data["indices"]) == len(data["y_pred"])
+        if len(data["indices"]) != len(data["y_pred"]):
+            raise ValueError("Each prediction needs a trajectory id")
 
         if "/" in file_name:
             dir_name = "/".join(file_name.split("/")[:-1])
             dir_path = Path(dir_name)
             dir_path.mkdir(parents=True, exist_ok=True)
 
-        with open(file_name, "w", encoding="utf-8") as data_fd:
+        with Path(file_name).open("w", encoding="utf-8") as data_fd:
             json.dump(data, data_fd, ensure_ascii=False, indent=4)
 
     def to_markdown(self) -> str:
@@ -204,8 +207,8 @@ class Evaluation:
         sep = "| :--: | " + " | ".join([":--:" for _ in self.classes]) + " | :--: |\n"
         body = ""
         for i, row in enumerate(c_matrix):
-            row = np.append(row, self.precision[i])
-            str_row = [str(round(c * 100, 2)) for c in row]
+            values = np.append(row, self.precision[i])
+            str_row = [str(round(c * 100, 2)) for c in values]
             str_row[i] = f"**{str_row[i]}**"
             body += f"| **{self.classes[i]}** | " + " | ".join(str_row) + " |\n"
         recall = (
@@ -226,12 +229,11 @@ class Evaluation:
         for i, row in enumerate(c_matrix):
             str_row = [f"{round(c * 100, 2)!s} \\%" for c in row]
             str_row[i] = r"\textbf{" + str_row[i] + "}"
-            row = LATEX_CM_ROW_TEMPLATE.substitute(
+            cls_rows += LATEX_CM_ROW_TEMPLATE.substitute(
                 cls_name=classes[i],
                 cls_vals=" & ".join(str_row),
                 cls_prec=f"{round(self.precision[i] * 100, 2)!s} \\%",
             )
-            cls_rows += row
 
         ans += LATEX_CM_TEMPLATE.substitute(
             caption=f"Confusion matrix for {model_name}. Dataset: {self.dataset_name}",

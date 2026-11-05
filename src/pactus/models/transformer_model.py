@@ -14,6 +14,8 @@ from pactus.models import Model
 from pactus.models.evaluation import Evaluation
 from pactus.models.transformer import TransformerBlock, build_model
 
+logger = logging.getLogger(__name__)
+
 NAME = "transformer_model"
 DEFAULT_OPTIMIZER = keras.optimizers.Adam(learning_rate=1e-2)
 DEFAULT_CALLBACKS = [keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)]
@@ -31,14 +33,14 @@ class TransformerModel(Model):
         mlp_units: list[int] | None = None,
         mlp_dropout: float = 0.4,
         dropout: float = 0.25,
-        loss="categorical_crossentropy",
-        optimizer=None,
-        metrics=None,
+        loss: str = "categorical_crossentropy",
+        optimizer: Any = None,
+        metrics: list[Any] | None = None,
         max_traj_len: int = -1,
         skip_long_trajs: bool = False,
-        mask_value=cfg.MASK_VALUE,
+        mask_value: int = cfg.MASK_VALUE,
         random_state: int | None = None,
-    ):
+    ) -> None:
         super().__init__(NAME)
         self.head_size = head_size
         self.num_heads = num_heads
@@ -83,13 +85,14 @@ class TransformerModel(Model):
         batch_size: int = 32,
         callbacks: list | None = None,
         checkpoint: keras.callbacks.ModelCheckpoint | None = None,
-    ):
+    ) -> None:
         if self.random_state is not None:
             tf.keras.utils.set_random_seed(self.random_state)
-            logging.warning(
-                f"Custom seed provided for {self.name} model. This "
-                "calls 'tf.keras.utils.set_random_seed' which sets a global "
-                "random state on python, numpy and tensorflow."
+            logger.warning(
+                "Custom seed provided for %s model. This calls "
+                "'tf.keras.utils.set_random_seed' which sets a global "
+                "random state on python, numpy and tensorflow.",
+                self.name,
             )
         self.set_summary(
             cross_validation=cross_validation,
@@ -108,12 +111,12 @@ class TransformerModel(Model):
         if checkpoint is not None:
             callbacks.append(checkpoint)
             if Path(checkpoint.filepath).exists():
-                logging.info("Loading model from checkpoint %s", checkpoint.filepath)
+                logger.info("Loading model from checkpoint %s", checkpoint.filepath)
                 model_path = checkpoint.filepath
 
         if cross_validation == 0:
             model = (
-                self._get_model(n_classes, input_shape, mask=self.mask_value)
+                self._get_model(n_classes, input_shape)
                 if model_path is None
                 else keras.models.load_model(
                     model_path, custom_objects={"TransformerBlock": TransformerBlock}
@@ -129,7 +132,8 @@ class TransformerModel(Model):
             )
             self.model = model
         else:
-            assert cross_validation > 1, "cross_validation must be greater than 1"
+            if not (cross_validation > 1):
+                raise ValueError("cross_validation must be greater than 1")
             kfold = KFold(n_splits=cross_validation, shuffle=True)
 
             best_acc = -1
@@ -137,7 +141,7 @@ class TransformerModel(Model):
             for train_idxs, test_idxs in kfold.split(x_train, y_train):
                 x_train_fold = x_train[train_idxs]
                 y_train_fold = y_train[train_idxs]
-                model = self._get_model(n_classes, input_shape, mask=self.mask_value)
+                model = self._get_model(n_classes, input_shape)
                 model.fit(
                     x_train_fold,
                     y_train_fold,
@@ -153,7 +157,7 @@ class TransformerModel(Model):
                 acc = scores[1]
                 loss = scores[0]
 
-                logging.info("Fold %d: Loss: %f, Accuracy: %f", fold_no, loss, acc)
+                logger.info("Fold %d: Loss: %f, Accuracy: %f", fold_no, loss, acc)
 
                 if acc > best_acc:
                     self.model = model
@@ -161,9 +165,10 @@ class TransformerModel(Model):
 
     def predict(self, data: Data) -> list[Any]:
         x_data, _ = self._get_input_data(data)
-        return self.model.predict(x_data)
+        predictions: list[Any] = self.model.predict(x_data)
+        return predictions
 
-    def _get_model(self, n_classes: int, input_shape: tuple, mask: Any = None) -> keras.Model:
+    def _get_model(self, n_classes: int, input_shape: tuple) -> keras.Model:
         model = build_model(
             n_classes,
             input_shape=input_shape,
@@ -174,7 +179,6 @@ class TransformerModel(Model):
             mlp_units=self.mlp_units,
             mlp_dropout=self.mlp_dropout,
             dropout=self.dropout,
-            # mask=mask, # FIXME: using mask is causing input shapes issues
         )
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
         return model
@@ -195,7 +199,6 @@ class TransformerModel(Model):
             self.encoder = LabelEncoder()
             self.encoder.fit(self.labels)
         encoded_labels = self.encoder.transform(data.labels)
-        assert isinstance(encoded_labels, np.ndarray)
 
         classes = np.zeros((len(encoded_labels), len(self.encoder.classes_)))
         for i, label in enumerate(encoded_labels):
@@ -204,7 +207,8 @@ class TransformerModel(Model):
 
     def _extract_raw_data(self, data: Data) -> np.ndarray:
         """Extracts the raw data from the yupi trajectories"""
-        assert self.original_data is not None, "Original data must be set"
+        if not (self.original_data is not None):
+            raise ValueError("Original data must be set")
 
         trajs = data.trajs
         max_len = np.max([len(traj) for traj in self.original_data.trajs])
@@ -213,10 +217,11 @@ class TransformerModel(Model):
         raw_data = [np.hstack((traj.r, np.reshape(traj.t, (-1, 1)))) for traj in trajs]
         if self.skip_long_trajs:
             raw_data = [traj for traj in raw_data if traj.shape[0] <= max_len]
-        assert len(raw_data) > 0, "No trajectories to train on"
+        if not (len(raw_data) > 0):
+            raise ValueError("No trajectories to train on")
         all_raw_data = np.zeros((len(raw_data), max_len, 3))
-        for i, traj in enumerate(raw_data):
-            traj = traj[:max_len]
+        for i, raw_traj in enumerate(raw_data):
+            traj = raw_traj[:max_len]
             all_raw_data[i, :, :] = self.mask_value
             all_raw_data[i, : traj.shape[0]] = traj
         return all_raw_data
@@ -226,7 +231,8 @@ class TransformerModel(Model):
         return x_data.reshape((x_data.shape[0], x_data.shape[1], x_data.shape[2], 1))
 
     def evaluate(self, data: Data) -> Evaluation:
-        assert self.encoder is not None, "Encoder is not set."
+        if not (self.encoder is not None):
+            raise ValueError("Encoder is not set.")
         x_data, _ = self._get_input_data(data)
         preds = self.model.predict(x_data)
         preds = [pred.argmax() for pred in preds]

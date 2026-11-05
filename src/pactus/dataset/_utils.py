@@ -1,7 +1,9 @@
 import gzip
 import logging
+import sys
 import tarfile
 import zipfile
+from http import HTTPStatus
 from pathlib import Path
 
 import requests
@@ -9,12 +11,14 @@ from requests import Response
 
 import pactus.config as cfg
 
+logger = logging.getLogger(__name__)
 
-def _get_path(path: str, *args) -> Path:
+
+def _get_path(path: str, *args: object) -> Path:
     return Path(path.format(*args))
 
 
-def _get_progress_log(part, total):
+def _get_progress_log(part: int, total: int) -> str:
     # If the total is unknown, just return the part
     if total == -1:
         return f"Downloaded: {part / 1024**2:.2f} MB"
@@ -28,16 +32,18 @@ def _get_progress_log(part, total):
 
 
 def _create_dataset_path(dataset_name: str) -> Path:
-    logging.info("Creating dataset folder for %s", dataset_name)
+    logger.info("Creating dataset folder for %s", dataset_name)
     dataset_path = _get_path(cfg.DS_DIR, dataset_name)
     dataset_path.mkdir(parents=True, exist_ok=True)
     return dataset_path
 
 
 def _start_download(url: str, dataset_name: str) -> Response:
-    logging.info("Downloading %s dataset", dataset_name)
-    response = requests.get(url, allow_redirects=True, stream=True)
-    if response.status_code != 200:
+    logger.info("Downloading %s dataset", dataset_name)
+    response = requests.get(
+        url, allow_redirects=True, stream=True, timeout=cfg.DOWNLOAD_TIMEOUT_SECONDS
+    )
+    if response.status_code != HTTPStatus.OK:
         raise RuntimeError(f"Failed to download dataset {dataset_name}")
     return response
 
@@ -46,13 +52,13 @@ def _download_until_finish(url: str, response: Response, dataset_path: Path) -> 
     data_length = int(response.headers.get("content-length", -1))
     size_mb_msg = f"    Size: {data_length / 1024**2:.2f} MB" if data_length != -1 else ""
     dataset_file_path = dataset_path / url.rsplit("/", maxsplit=1)[-1]
-    with open(dataset_file_path, "wb") as ds_file:
+    with dataset_file_path.open("wb") as ds_file:
         downloaded = 0
         for chunk in response.iter_content(chunk_size=cfg.DOWNLOAD_CHUNCK_SIZE):
             if chunk:
                 ds_file.write(chunk)
                 downloaded += len(chunk)
-                print(_get_progress_log(downloaded, data_length) + size_mb_msg, end="\r")
+                sys.stderr.write(_get_progress_log(downloaded, data_length) + size_mb_msg + "\r")
     return dataset_file_path
 
 
@@ -67,7 +73,7 @@ def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
         if "content-length" in response.headers:
             size = int(response.headers["content-length"])
             if size == dataset_file_path.stat().st_size:
-                logging.info("Dataset already downloaded")
+                logger.info("Dataset already downloaded")
                 return dataset_file_path
 
         msg = "There is a downloaded dataset with the same name, but the download size is unknown."
@@ -79,7 +85,7 @@ def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
                 f"    Found: {dataset_file_path.stat().st_size / 1024**2:.2f} MB\n"
                 f"    Expected: {size / 1024**2:.2f} MB\n"
             )
-        logging.warning(msg)
+        logger.warning(msg)
         ans = input("Do you want to overwrite it? [y/n]: ")
         if ans.lower() != "y":
             return dataset_file_path
@@ -88,20 +94,22 @@ def _download(url: str, dataset_name: str, dataset_path: Path) -> Path:
     return _download_until_finish(url, response, dataset_path)
 
 
-def _uncompress(dataset_name: str, dataset_file_path: Path, dataset_path: Path):
-    logging.info("Extracting %s dataset", dataset_name)
+def _uncompress(dataset_name: str, dataset_file_path: Path, dataset_path: Path) -> None:
+    logger.info("Extracting %s dataset", dataset_name)
 
     str_path = str(dataset_file_path)
     if str_path.endswith(".zip"):
         with zipfile.ZipFile(dataset_file_path, "r") as zip_ref:
-            zip_ref.extractall(dataset_path)
+            zip_ref.extractall(dataset_path)  # noqa: S202
     elif str_path.endswith(".tar.gz"):
         with tarfile.open(dataset_file_path, "r") as tar_ref:
-            tar_ref.extractall(dataset_path)
+            tar_ref.extractall(dataset_path, filter="data")
     elif str_path.endswith(".gz"):
-        with gzip.open(dataset_file_path, "rb") as gz_ref:
-            with open(str(dataset_file_path.with_suffix("")), "wb") as uncompressed:
-                uncompressed.write(gz_ref.read())
+        with (
+            gzip.open(dataset_file_path, "rb") as gz_ref,
+            dataset_file_path.with_suffix("").open("wb") as uncompressed,
+        ):
+            uncompressed.write(gz_ref.read())
 
 
 def download_dataset(url: str, dataset_name: str) -> None:

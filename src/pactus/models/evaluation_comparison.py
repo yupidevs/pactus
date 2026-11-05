@@ -38,12 +38,12 @@ class EvaluationComparison:
         self.evals_by_model: dict[str, list[Evaluation]] = {}
         for evaluation in self.evals:
             model = evaluation.model_summary["name"]
-            self.evals_by_model[model] = self.evals_by_model.get(model, []) + [evaluation]
+            self.evals_by_model[model] = [*self.evals_by_model.get(model, []), evaluation]
 
         self.evals_by_dataset: dict[str, list[Evaluation]] = {}
         for evaluation in self.evals:
             ds_name = evaluation.dataset_name
-            self.evals_by_dataset[ds_name] = self.evals_by_dataset.get(ds_name, []) + [evaluation]
+            self.evals_by_dataset[ds_name] = [*self.evals_by_dataset.get(ds_name, []), evaluation]
 
     def to_latex(self) -> str:
         rows = []

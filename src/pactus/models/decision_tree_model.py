@@ -14,14 +14,14 @@ NAME = "decision_tree"
 class DecisionTreeModel(Model):
     """Implementation of a Decision Tree Classifier."""
 
-    def __init__(self, featurizer: featurizers.Featurizer, **kwargs):
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs: Any) -> None:
         super().__init__(NAME)
         self.featurizer = featurizer
         self.model = DecisionTreeClassifier(**kwargs)
         self.grid: GridSearchCV
         self.set_summary(**kwargs)
 
-    def train(self, data: Data, cross_validation: int = 0):
+    def train(self, data: Data, cross_validation: int = 0) -> None:
         self.set_summary(cross_validation=cross_validation)
         x_data = data.featurize(self.featurizer)
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
@@ -29,7 +29,8 @@ class DecisionTreeModel(Model):
 
     def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)
-        return self.grid.predict(x_data)
+        predictions: list[Any] = self.grid.predict(x_data)
+        return predictions
 
     def predict_single(self, traj: Trajectory) -> Any:
         """Predicts the label of a single trajectory."""

@@ -14,6 +14,8 @@ from pactus.dataset import Data
 from pactus.models.evaluation import Evaluation
 from pactus.models.model import Model
 
+logger = logging.getLogger(__name__)
+
 NAME = "lstm"
 
 DEFAULT_CALLBACKS = [keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)]
@@ -26,17 +28,17 @@ class LSTMModel(Model):
         self,
         units: list[int] | None = None,
         masking_value: int | None = None,
-        loss="sparse_categorical_crossentropy",
-        optimizer="rmsprop",
-        metrics=None,
+        loss: str = "sparse_categorical_crossentropy",
+        optimizer: Any = "rmsprop",
+        metrics: list[Any] | None = None,
         random_state: int | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(NAME)
         self.masking_value = cfg.MASK_VALUE if masking_value is None else masking_value
         self.encoder: LabelEncoder | None = None
         self.dataset: Dataset | None = None
-        self.model: keras.Secuential
+        self.model: keras.Sequential
         self.max_len = 0
         self.random_state = random_state
         metrics = ["accuracy"] if metrics is None else metrics
@@ -46,22 +48,22 @@ class LSTMModel(Model):
         self.set_summary(**self.compile_args)
 
     def _get_x_data(self, max_len: int, trajs: list[Trajectory]) -> np.ndarray:
-        _X = np.empty(
+        x_data = np.empty(
             (
                 len(trajs),
                 max_len,
                 trajs[0].dim + 1,  # all pos dim plust time
             )
         )
-        _X[:, :, :] = self.masking_value
+        x_data[:, :, :] = self.masking_value
         for i, traj in enumerate(trajs):
             top = len(traj)
             for dim in range(traj.dim):
-                _X[i, :top, dim] = traj.r.component(dim)
-            _X[i, :top, -1] = traj.t
-        return _X
+                x_data[i, :top, dim] = traj.r.component(dim)
+            x_data[i, :top, -1] = traj.t
+        return x_data
 
-    def _get_model(self, input_shape, n_classes):
+    def _get_model(self, input_shape: tuple[int, int], n_classes: int) -> keras.Sequential:
         max_len, traj_dim = input_shape
         model = keras.Sequential()
         model.add(
@@ -82,7 +84,8 @@ class LSTMModel(Model):
         return model
 
     def _prepare_data(self, data: Data) -> tuple[np.ndarray, np.ndarray]:
-        assert self.dataset is not None, "Dataset is not set"
+        if not (self.dataset is not None):
+            raise ValueError("Dataset is not set")
 
         self.encoder = LabelEncoder()
         self.encoder.fit(data.labels)
@@ -97,22 +100,23 @@ class LSTMModel(Model):
         self,
         data: Data,
         dataset: Dataset,
-        cross_validation=0,
-        epochs=10,
-        batch_size=None,
-        validation_split=None,
+        cross_validation: int = 0,
+        epochs: int = 10,
+        batch_size: int | None = None,
+        validation_split: float | None = None,
         callbacks: list | None = None,
         checkpoint: keras.callbacks.ModelCheckpoint | None = None,
-    ):
+    ) -> None:
         if self.random_state is not None:
             tf.keras.utils.set_random_seed(self.random_state)
-            logging.warning(
-                f"Custom seed provided for {self.name} model. This "
-                "calls 'tf.keras.utils.set_random_seed' which sets a global "
-                "random state on python, numpy and tensorflow."
+            logger.warning(
+                "Custom seed provided for %s model. This calls "
+                "'tf.keras.utils.set_random_seed' which sets a global "
+                "random state on python, numpy and tensorflow.",
+                self.name,
             )
         if cross_validation != 0:
-            logging.warning("Cross validation is not supported yet for lstm")
+            logger.warning("Cross validation is not supported yet for lstm")
         self.set_summary(epochs=epochs, validation_split=validation_split)
         callbacks = DEFAULT_CALLBACKS.copy() if callbacks is None else callbacks
         model_path = None
@@ -120,7 +124,7 @@ class LSTMModel(Model):
         if checkpoint is not None:
             callbacks.append(checkpoint)
             if Path(checkpoint.filepath).exists():
-                logging.info("Loading model from checkpoint %s", checkpoint.filepath)
+                logger.info("Loading model from checkpoint %s", checkpoint.filepath)
                 model_path = checkpoint.filepath
         x_train, y_train = self._prepare_data(data)
         self.model = (
@@ -145,10 +149,12 @@ class LSTMModel(Model):
 
     def predict(self, data: Data) -> list[Any]:
         x_data = self._get_x_data(self.max_len, data.trajs)
-        return self.model.predict(x_data)
+        predictions: list[Any] = self.model.predict(x_data)
+        return predictions
 
     def evaluate(self, data: Data) -> Evaluation:
-        assert self.encoder is not None, "Encoder is not set."
+        if not (self.encoder is not None):
+            raise ValueError("Encoder is not set.")
         x_data = self._get_x_data(self.max_len, data.trajs)
         preds = self.model.predict(x_data)
         preds = [pred.argmax() for pred in preds]
