@@ -26,6 +26,7 @@ class RandomForestModel(Model):
         x_data = data.featurize(self.featurizer)
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
         self.grid.fit(x_data, data.labels)
+        self.trained = True
 
     def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)

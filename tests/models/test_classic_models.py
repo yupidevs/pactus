@@ -29,7 +29,9 @@ def test_models_train_and_evaluate(
 ) -> None:
     train, test = dataset.split(0.75, random_state=0)
     model = model_class(featurizer=featurizers.SpatialFeaturizer(), **options)
+    assert not model.trained
     model.train(train, cross_validation=2)
+    assert model.trained
     evaluation = model.evaluate(test)
     assert isinstance(evaluation, Evaluation)
     assert len(evaluation.y_pred) == len(test)

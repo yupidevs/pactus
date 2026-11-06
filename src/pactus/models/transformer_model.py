@@ -75,7 +75,7 @@ class TransformerModel(Model):
             skip_long_trajs=self.skip_long_trajs,
         )
 
-    def train(
+    def train(  # type: ignore[override]  # also needs the full dataset
         self,
         data: Data,
         original_data: Data,
@@ -163,6 +163,7 @@ class TransformerModel(Model):
                     best_acc = acc
                     self.model = model
                 fold_no += 1
+        self.trained = True
 
     def predict(self, data: Data) -> list[Any]:
         x_data, _ = self._get_input_data(data)

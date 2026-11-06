@@ -96,7 +96,7 @@ class LSTMModel(Model):
         x_data = self._get_x_data(self.max_len, data.trajs)
         return x_data, y_data
 
-    def train(
+    def train(  # type: ignore[override]  # also needs the full dataset
         self,
         data: Data,
         dataset: Dataset,
@@ -146,6 +146,7 @@ class LSTMModel(Model):
             validation_split=validation_split,
             callbacks=callbacks,
         )
+        self.trained = True
 
     def predict(self, data: Data) -> list[Any]:
         x_data = self._get_x_data(self.max_len, data.trajs)

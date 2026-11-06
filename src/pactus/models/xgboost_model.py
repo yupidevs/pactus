@@ -38,6 +38,7 @@ class XGBoostModel(Model):
         self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
         classes = self._encode_labels(data)
         self.grid.fit(x_data, classes)
+        self.trained = True
 
     def predict(self, data: Data) -> list[Any]:
         x_data = data.featurize(self.featurizer)

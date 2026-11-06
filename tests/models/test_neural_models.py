@@ -21,7 +21,9 @@ def _transformer(**options: object) -> TransformerModel:
 def test_lstm_trains_and_evaluates(dataset: Dataset) -> None:
     train, test = dataset.split(0.75, random_state=0)
     model = LSTMModel(units=[2], random_state=0)
+    assert not model.trained
     model.train(train, dataset, epochs=1, batch_size=8)
+    assert model.trained
     evaluation = model.evaluate(test)
     assert isinstance(evaluation, Evaluation)
     assert len(evaluation.y_pred) == len(test)
@@ -31,7 +33,9 @@ def test_lstm_trains_and_evaluates(dataset: Dataset) -> None:
 def test_transformer_trains_and_evaluates(dataset: Dataset) -> None:
     train, test = dataset.split(0.75, random_state=0)
     model = _transformer()
+    assert not model.trained
     model.train(train, dataset, epochs=1, batch_size=8)
+    assert model.trained
     assert isinstance(model.evaluate(test), Evaluation)
     assert np.asarray(model.predict(test)).shape == (len(test), 2)
 

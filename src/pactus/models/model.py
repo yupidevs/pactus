@@ -2,25 +2,12 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from typing import Any
 
 from pactus.dataset import Data
 from pactus.models.evaluation import Evaluation
 
 logger = logging.getLogger(__name__)
-
-
-def _mark_trained(func: Callable[..., Any]) -> Callable[..., Any]:
-    def wrapper(self: Model, *args: Any, **kwargs: Any) -> Any:
-        logger.info("Training %s model", self.name)
-        val = func(self, *args, **kwargs)
-        self.trained = True
-        return val
-
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
-    return wrapper
 
 
 class Model(ABC):
@@ -32,7 +19,6 @@ class Model(ABC):
         self.trained = False
 
     @abstractmethod
-    @_mark_trained
     def train(self, data: Data, cross_validation: int = 0) -> None:
         """Train the model using a given dataset"""
 
