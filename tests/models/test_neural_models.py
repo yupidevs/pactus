@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -6,7 +8,7 @@ from pactus.models import LSTMModel, TransformerModel
 from pactus.models.transformer import TransformerBlock
 
 
-def _transformer(**options: object) -> TransformerModel:
+def _transformer(**options: Any) -> Any:
     return TransformerModel(
         head_size=4,
         ff_dim=2,
@@ -14,7 +16,7 @@ def _transformer(**options: object) -> TransformerModel:
         mlp_units=[4],
         optimizer="adam",
         random_state=0,
-        **options,  # type: ignore[arg-type]
+        **options,
     )
 
 
