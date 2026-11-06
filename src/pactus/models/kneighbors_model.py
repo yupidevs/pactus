@@ -34,4 +34,4 @@ class KNeighborsModel(Model):
 
     def predict_single(self, traj: Trajectory) -> Any:
         """Predicts the label of a single trajectory."""
-        return self.grid.predict([traj])[0]
+        return self.grid.predict(self.featurizer.featurize([traj]))[0]

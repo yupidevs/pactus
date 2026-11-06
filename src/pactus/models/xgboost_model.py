@@ -49,4 +49,7 @@ class XGBoostModel(Model):
 
     def predict_single(self, traj: Trajectory) -> Any:
         """Predicts the label of a single trajectory."""
-        return self.grid.predict([traj])[0]
+        if self.encoder is None:
+            raise ValueError("The model has not been trained")
+        predicted = self.grid.predict(self.featurizer.featurize([traj]))
+        return self.encoder.inverse_transform(predicted)[0]
