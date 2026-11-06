@@ -74,3 +74,24 @@ def test_transformer_block_config_round_trip() -> None:
     block = TransformerBlock(4, 1, 2, 1, rate=0.3)
     config = block.get_config()
     assert (config["head_size"], config["ff_dim2"], config["rate"]) == (4, 1, 0.3)
+
+
+class _Fold:
+    def __init__(self, accuracy: float) -> None:
+        self.accuracy = accuracy
+
+    def fit(self, *args: object, **kwargs: object) -> None: ...
+
+    def evaluate(self, *args: object, **kwargs: object) -> list[float]:
+        return [0.0, self.accuracy]
+
+
+def test_cross_validation_keeps_the_best_fold(
+    dataset: Dataset, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    folds = [_Fold(0.2), _Fold(0.9), _Fold(0.5)]
+    pending = iter(folds)
+    model = _transformer()
+    monkeypatch.setattr(model, "_get_model", lambda *args: next(pending))
+    model.train(dataset, dataset, cross_validation=3, epochs=1)
+    assert model.model is folds[1]

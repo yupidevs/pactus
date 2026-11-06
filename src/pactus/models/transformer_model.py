@@ -160,6 +160,7 @@ class TransformerModel(Model):
                 logger.info("Fold %d: Loss: %f, Accuracy: %f", fold_no, loss, acc)
 
                 if acc > best_acc:
+                    best_acc = acc
                     self.model = model
                 fold_no += 1
 
