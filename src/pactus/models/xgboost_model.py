@@ -1,0 +1,56 @@
+from typing import Any
+
+import numpy as np
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import LabelEncoder
+from xgboost import XGBClassifier
+from yupi import Trajectory
+
+from pactus import featurizers
+from pactus.dataset import Data
+from pactus.models.model import Model
+
+NAME = "xgboost"
+
+
+class XGBoostModel(Model):
+    """Implementation of a XGBoost Classifier."""
+
+    def __init__(self, featurizer: featurizers.Featurizer, **kwargs: Any) -> None:
+        super().__init__(NAME)
+        self.featurizer = featurizer
+        self.model = XGBClassifier(**kwargs)
+        self.encoder: LabelEncoder | None = None
+        self.grid: GridSearchCV
+        self.set_summary(**kwargs)
+
+    def _encode_labels(self, data: Data) -> np.ndarray:
+        """Encode the labels"""
+        if self.encoder is None:
+            self.encoder = LabelEncoder()
+            self.encoder.fit(data.labels)
+        encoded_labels: np.ndarray = self.encoder.transform(data.labels)
+        return encoded_labels
+
+    def train(self, data: Data, cross_validation: int = 0) -> None:
+        self.set_summary(cross_validation=cross_validation)
+        x_data = data.featurize(self.featurizer)
+        self.grid = GridSearchCV(self.model, {}, cv=cross_validation, verbose=3)
+        classes = self._encode_labels(data)
+        self.grid.fit(x_data, classes)
+        self.trained = True
+
+    def predict(self, data: Data) -> list[Any]:
+        x_data = data.featurize(self.featurizer)
+        predicted = self.grid.predict(x_data)
+        if self.encoder is None:
+            raise ValueError("The model has not been trained")
+        labels: list[Any] = self.encoder.inverse_transform(predicted)
+        return labels
+
+    def predict_single(self, traj: Trajectory) -> Any:
+        """Predicts the label of a single trajectory."""
+        if self.encoder is None:
+            raise ValueError("The model has not been trained")
+        predicted = self.grid.predict(self.featurizer.featurize([traj]))
+        return self.encoder.inverse_transform(predicted)[0]
