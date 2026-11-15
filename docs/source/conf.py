@@ -9,15 +9,12 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../../"))
-sys.path.insert(0, os.path.abspath("../../pactus/"))
-sys.path.insert(0, os.path.abspath("../../pactus/dataset/"))
-sys.path.insert(0, os.path.abspath("../../pactus/models/"))
+sys.path.insert(0, os.path.abspath("../../src/"))
 
 project = "pactus"
 copyright = "2023, Jorge Morgado Vega"
 author = "Jorge Morgado Vega, Gustavo Viera-López, Alfredo Reyes"
-release = "0.4.3"
+release = "0.5.0-beta0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

@@ -1,0 +1,15 @@
+name: QA
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  qa:
+    uses: gvieralopez/cookie-pyrate/.github/workflows/reusable-qa.yml@v1.1.2
+    with:
+      cookie-pyrate-ref: v1.1.2
+      python-version: "3.11"
+      # TensorFlow has no wheels for Python 3.14 or newer yet
+      test-python-versions: '["3.12", "3.13"]'

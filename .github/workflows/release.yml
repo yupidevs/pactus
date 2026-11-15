@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["QA"]
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event.workflow_run.conclusion == 'success'
+    uses: gvieralopez/cookie-pyrate/.github/workflows/reusable-release.yml@v1.1.2
+    permissions:
+      contents: write
+    with:
+      cookie-pyrate-ref: v1.1.2
+      create-github-release: true
+      attach-distribution: false
+      prepare-next-version: true
+    secrets:
+      # Created by `make repo`; lets the version bumps land on a protected main.
+      RELEASE_SSH_KEY: ${{ secrets.RELEASE_SSH_KEY }}
+
+  pypi:
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pactus/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: gvieralopez/cookie-pyrate/.github/actions/publish-to-pypi@v1.1.2
+        with:
+          sha: ${{ needs.release.outputs.sha }}

@@ -14,7 +14,7 @@ datasets = [
     Dataset.uci_characters(),
     Dataset.uci_movement_libras(),
 ]
-    
+
 # Select the desired features to be extracted from the trajectories
 featurizer = featurizers.UniversalFeaturizer()
 
@@ -23,13 +23,10 @@ for dataset in datasets:
 
     # Split the dataset into train and test and filter out short trajectories
     train, test = dataset.filter(
-        lambda traj, label: len(traj) >= 5
-        and traj.r.delta.norm.sum() > 0
-        and dataset.label_counts[label] > 5
-    ).split(
-        train_size=0.7,
-        random_state=SEED,
-    )
+        lambda traj, label, counts=dataset.label_counts: (
+            len(traj) >= 5 and traj.r.delta.norm.sum() > 0 and counts[label] > 5
+        )
+    ).split(train_size=0.7, random_state=SEED)
 
     # Define the model
     model = XGBoostModel(featurizer=featurizer)
