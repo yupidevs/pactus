@@ -1,6 +1,6 @@
 [project]
 name = "pactus"
-version = "0.5.0"
+version = "0.5.1-beta0"
 description = "Framework to evaluate Trajectory Classification Algorithms"
 readme = "README.md"
 requires-python = ">=3.11"
